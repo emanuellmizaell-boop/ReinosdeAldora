@@ -1,0 +1,15 @@
+Reinos de Aldora - app Android (WebView embutida, sem navegador)
+O que este app desliga/controla: puxar-para-atualizar (não existe aqui), zoom por pinça, seleção de texto,
+menu de toque longo, rolagem elástica, barras do sistema (tela cheia imersiva), tela apagando, fonte do sistema.
+Botão voltar fecha menus/diálogos do jogo; sem nada aberto, minimiza o app. O progresso é salvo ao sair.
+
+COMO GERAR O APK (sem instalar nada no PC):
+1. Crie um repositório no GitHub e envie esta pasta inteira (inclusive a pasta oculta .github).
+2. Aba Actions > "Build APK" > aguarde ~3 min > baixe o artefato "ReinosDeAldora-apk" (app-debug.apk).
+   Se aparecer erro de 'gradle-wrapper.jar', ignore: o gradlew deste projeto usa o Gradle do sistema quando o jar falta.
+   Use SEMPRE a execução 'Build APK' (verde) para baixar o APK. Se houver outro fluxo antigo com erro, apague-o em .github/workflows/.
+3. No celular: permita instalar de fontes desconhecidas e abra o APK.
+Alternativa: Android Studio > Open > Build > Build APK(s).
+
+COMO ATUALIZAR O JOGO DENTRO DO APP: troque o arquivo app/src/main/assets/index.html pelo novo e gere o APK de novo
+(aumente versionCode em app/build.gradle). Os personagens salvos continuam (instalar por cima mantém os dados).
