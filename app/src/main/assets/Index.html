@@ -1,1 +1,35 @@
-
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><title>Reinos de Aldora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;500;700&family=Cinzel:wght@600;700&display=swap">
+<style>
+/* Layout: mundo em tela cheia; HUD em couro escuro com filetes dourados nos cantos */
+:root{--ink:#0d0f15;--leather:#1d1812;--leather2:#2b2318;--gold:#d9a94a;--goldd:#7a5c28;--parch:#f1e6c9;--muted:#a89a7c;--hp:#d4453a;--mp:#4a7ae0;--xp:#e2b84a;--good:#5ec878;--bad:#ff6a5a;
+--disp:'Cinzel',Georgia,'Times New Roman',serif;--body:'Alegreya Sans','Trebuchet MS',system-ui,sans-serif;color-scheme:dark}
+html,body{height:100%;margin:0;background:var(--ink);color:var(--parch);font-family:var(--body);font-size:15px;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;user-select:none}
+html,body{touch-action:none}body{position:fixed;inset:0;width:100%}
+#pbody,#dbody,.list,#start,#chars,#lookmodal,#bkmodal,textarea{touch-action:pan-y;overscroll-behavior:contain}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+[hidden]{display:none!important}
+button{font-family:inherit;color:inherit;cursor:pointer}
+.box{background:linear-gradient(180deg,var(--leather2),var(--leather));border:1.5px solid var(--goldd);border-radius:10px;box-shadow:0 6px 22px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,220,150,.07)}
+#hud{position:fixed;left:max(12px,env(safe-area-inset-left,0px));top:max(12px,env(safe-area-inset-top,0px));width:250px;padding:10px 12px}
+#stbar{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px;min-height:0}
+#stbar b{font:700 11px system-ui;padding:1px 6px;border-radius:9px;border:1px solid rgba(255,255,255,.25);color:#10100c}
+#tinfo{font-size:11px;color:var(--muted);margin:1px 0 3px}
+#tinfo i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:baseline}
+#hud .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+#pname{font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#plvl{color:var(--gold);font-weight:700}
+.bar{position:relative;height:15px;margin-top:6px;border-radius:8px;background:#0b0907;border:1px solid #000;overflow:hidden}
+.bar i{position:absolute;inset:0 auto 0 0;width:50%;transition:width .15s}
+.bar span{position:absolute;inset:0;text-align:center;font-size:11px;line-height:15px;font-weight:700;text-shadow:0 1px 2px #000}
+#hpf{background:linear-gradient(#f0665a,#a82a22)}#mpf{background:linear-gradient(#6a98f4,#2a4eb0)}#xpf{background:linear-gradient(#f4d060,#b8841c)}
+.bar.xp{height:7px}
+#hud .meta{display:flex;justify-content:space-between;margin-top:7px;font-size:13px;color:var(--muted)}
+#hud .meta b{color:var(--gold)}
+#tgt{position:fixed;left:50%;top:max(12px,env(safe-area-inset-top,0px));transform:translateX(-50%);padding:6px 14px;min-width:190px;text-align:center}
+#tname{font-weight:700;font-size:14px}#tgt .bar{height:9px;margin-top:4px}#thp{background:linear-gradient(#f0665a,#a82a22)}
+#zone{position:fixed;left:50%;top:22%;transform:translateX(-50%);text-align:center;pointer-events:none;opacity:0}
+#zone b{display:block;font-family:var(--disp);font-size:clamp(22px,4vw,38px);letter-spacing:.08em;text-shadow:0 2px 12px #000,0 0 30px rgba(0,0,0,.8);color:#fff6dc}
+#zone span{font-size:14px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);text-shadow:0 1px 6px #000}
+#zone.show{animation:zn 4.2s ease-out forwards}
