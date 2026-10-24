@@ -1225,7 +1225,7 @@ async function genWorld(cb){
  world.npcs.forEach(n=>{if(!world.walk[0][n.y*W+n.x]){outer:for(let r=1;r<5;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){const j=(n.y+dy)*W+n.x+dx;if(world.walk[0][j]&&!world.npcs.some(m=>m!==n&&m.x===n.x+dx&&m.y===n.y+dy)){n.x+=dx;n.y+=dy;break outer}}}});
  P('Povoando com criaturas…',.8);await tick();stageSpawns();
  await genContinent2(P);await genContinent3(P);await genContinent4(P);await genContinent5(P);await genContinent6(P);
- P('Cavando masmorras…',.95);await tick();stageDungeons();
+ P('Cavando masmorras…',.95);await tick();stageDungeons();stageHome();
  P('Desenhando o mapa-múndi…',.96);await tick();stageOverview();
  P('Pronto!',1);
 }
@@ -3089,7 +3089,7 @@ function render(dt){
   for(const c of world.cities){if(c.rect.x1<x0||c.rect.x0>x1)continue;/* nome da cidade ao entrar já é mostrado no HUD */}}
  // iluminação
  const sx=(P.px+.5)*ts+ox,sy=(P.py+.5)*ts+oy;
- if(l>=1){const gr=ctx.createRadialGradient(sx,sy,ts*1.2,sx,sy,ts*(l>=2?6.6:8.5));gr.addColorStop(0,'rgba(6,4,12,.12)');gr.addColorStop(.5,'rgba(6,4,12,.62)');gr.addColorStop(1,'rgba(4,2,8,.93)');ctx.fillStyle=gr;ctx.fillRect(0,0,cw,ch)}
+ if(l>=1&&!inHome()){const gr=ctx.createRadialGradient(sx,sy,ts*1.2,sx,sy,ts*(l>=2?6.6:8.5));gr.addColorStop(0,'rgba(6,4,12,.12)');gr.addColorStop(.5,'rgba(6,4,12,.62)');gr.addColorStop(1,'rgba(4,2,8,.93)');ctx.fillStyle=gr;ctx.fillRect(0,0,cw,ch)}
  else{const nt=nightAmt();if(nt>.02){const gr=ctx.createRadialGradient(sx,sy,ts*1.5,sx,sy,ts*9);gr.addColorStop(0,'rgba(8,12,44,'+(nt*.35)+')');gr.addColorStop(1,'rgba(6,10,40,'+nt+')');ctx.fillStyle=gr;ctx.fillRect(0,0,cw,ch)}
   const sun=Math.sin(((T/DAYLEN+DAYSTART)%1-.25)*PI2),wm=clamp(1-Math.abs(sun)/.3,0,1)*.14;if(wm>.01){ctx.fillStyle='rgba(255,130,50,'+wm+')';ctx.fillRect(0,0,cw,ch)}}
  if(!OPT.eco){drawAmbient(ts);drawWeather(ts,sx,sy)}
@@ -3182,7 +3182,7 @@ function plate(e,ts,ox,oy){
 }
 // partículas de ambiente
 const amb=[];for(let i=0;i<70;i++)amb.push({x:Math.random(),y:Math.random(),s:Math.random(),v:Math.random()});
-function ambKind(){if(P.layer>=1)return 'dust';const b=world.biome[Math.round(P.y)*W+Math.round(P.x)];return b===7?'snow':b===9?'ember':b===4?'sand':b===8&&P.y<150?'snow':b===3||b===6?'fly':b===2?'leaf':'none'}
+function ambKind(){if(inHome())return 'none';if(P.layer>=1)return 'dust';const b=world.biome[Math.round(P.y)*W+Math.round(P.x)];return b===7?'snow':b===9?'ember':b===4?'sand':b===8&&P.y<150?'snow':b===3||b===6?'fly':b===2?'leaf':'none'}
 function drawAmbient(ts){
  const k=ambKind();if(k==='none')return;const nt=P.layer?1:nightAmt();
  if(k==='fly'&&nt<.2)return;
@@ -3272,7 +3272,7 @@ const INVMAX=40,SAVEKEY='aldora_save_v1';
 let seen=[0,1,2,3].map(()=>new Uint8Array((W>>2)*(H>>2)));const known=[null,null];
 function resizeBuffers(){seen=[0,1,2,3].map(()=>new Uint8Array((W>>2)*(H>>2)));gS=new Float32Array(N);cF=new Int32Array(N);stp=new Uint32Array(N);stampN=0}
 const okey=(l,x,y)=>l*N+y*W+x;
-const TITLES={boat:'Barqueiro',bank:'Banqueiro',plaza1:'Mestre de Missões',plaza2:'Mestre de Missões',guard:'Guarda',citizen:'Cidadão'};
+const TITLES={realtor:'Corretor',boat:'Barqueiro',bank:'Banqueiro',plaza1:'Mestre de Missões',plaza2:'Mestre de Missões',guard:'Guarda',citizen:'Cidadão'};
 const RUMORS=['Dizem que dragões dormem nas montanhas, perto de Ferrovale.','Cuidado com o pântano: as bruxas lançam maldições de longe.','Há um oásis escondido no deserto de Khem. Vale a viagem!','No norte, o Rei Yeti guarda um tesouro de gelo.','Cavernas se abrem nas montanhas, nos desertos e perto dos vulcões.','Compre poções antes de explorar cavernas. A escuridão é perigosa.','O Cocheiro leva você a cidades que já visitou. Descubra todas!','Eu vi um obelisco brilhando na floresta à noite…','Arqueiros atacam de longe; magos têm mana de sobra; cavaleiros aguentam o tranco.','O Faraó Amenhotep desperta nas tumbas do deserto. Ninguém voltou de lá.','Monstros ficam mais fortes quanto mais longe das cidades.','Vendo meus ratos de estimação! Brincadeira… eles fugiram.','O mapa-múndi (tecla M) revela o que você já explorou.','As estradas ligam todas as cidades. Siga-as com segurança.'];
 // ---------- som ----------
 
@@ -3351,6 +3351,7 @@ function onArrive(){const i=P.y*W+P.x,o=world.obj[P.layer][i];
  if(o===O.CAVEIN&&P.layer===0){const e=world.entrances.find(e=>e.x===P.x&&e.y===P.y);if(e&&!e.found){e.found=true;P.ents[e.x+','+e.y]=1;log('Você entrou em uma '+THEMENAME[e.theme]+'. Cuidado com a escuridão!','warn')}const[x,y]=freeNear(1,P.x,P.y+1,true);teleport(1,x,y)}
  else if(o===O.CAVEOUT&&P.layer===1){const[x,y]=freeNear(0,P.x,P.y+1,true);teleport(0,x,y)}
  else if(o===O.STAIRD&&P.layer>=1&&P.layer<3){const L=P.layer+1,[x,y]=freeNear(L,P.x,P.y+1,true);teleport(L,x,y);dungArrive(L)}
+ else if(o===O.HDOOR&&P.layer===2){homeExit()}
  else if(o===O.STAIRU&&P.layer>=2){const L=P.layer-1,[x,y]=freeNear(L,P.x,P.y+1,true);teleport(L,x,y)}}
 // ---------- monstros ----------
 function spawnMon(s){const d=MON[s.m];if(!d)return;if(!canEnter({l:s.l,type:'mon'},s.x,s.y))return;
@@ -3374,7 +3375,7 @@ function killMon(m){const d=m.def;despawn(m);if(m.spawn&&m.spawn.ev)evKill(m);dq
  corpses.push({x:m.x,y:m.y,l:m.l,t:6});dying.push({def:m.def,type:'mon',px:m.px,py:m.py,l:m.l,face:m.face,t:0,dur:d.boss?.9:.55,hx:m.hx||0,hy:m.hy||0,id:m.id,seed:m.seed});burst(m.px,m.py-.4,'#c04030',14);
  if(m.spawn&&m.spawn.minion){gainExp(Math.round(BAL.X(d)*.25));refreshUI();return}
  if(d.boss)for(const q of monsters.slice())if(q.owner===m){burst(q.px,q.py-.4,'#c080ff',10);despawn(q)}
- const xe=Math.round(BAL.X(d)*(m.xm||1)*(m.l===0?nightXp():1));gainExp(xe);float(P,'+'+xe+' xp','#ffe070');P.kills++;petKill(m);achKill(m);
+ const xe=Math.round(BAL.X(d)*(m.xm||1)*(P.restT>gameTime?1.1:1)*(m.l===0?nightXp():1));gainExp(xe);float(P,'+'+xe+' xp','#ffe070');P.kills++;petKill(m);achKill(m);
  const got=[],g=Math.max(1,Math.round(d.gold*BAL.G(d.lvl)*rr(.5,1.5)*(d.boss?4:1)*(m.xm||1)));P.gold+=g;
  for(const l of d.loot){if(Math.random()<l[2]*(d.boss?1.6:1)){const id=slug(l[0]);const n=l[2]>=.5&&!d.boss?ri(1,2):1;if(giveItem(id,n))got.push((n>1?n+'x ':'')+ITEMS[id].name);else{log('Mochila cheia! '+ITEMS[id].name+' foi perdido.','warn')}}}
  dropEquip(d,got);
@@ -3508,7 +3509,7 @@ function revive(){const c=world.cities.find(c=>c.id===P.home)||world.cities[0];c
  const[x,y]=freeNear(0,c.spawn.x,c.spawn.y,true);teleport(0,x,y);log('Você renasceu em '+c.name+'. Perdeu '+fmt(lost)+' de experiência.','warn');refreshUI()}
 // ---------- descobertas ----------
 let lastZone='';
-function zoneName(){if(P.layer>=2){const D=dungAt();return{n:D?D.name+' · Andar '+P.layer:'Masmorra',s:'Masmorra'}}
+function zoneName(){if(inHome())return{n:'Sua casa',s:'Lar'};if(P.layer>=2){const D=dungAt();return{n:D?D.name+' · Andar '+P.layer:'Masmorra',s:'Masmorra'}}
  if(P.layer===1)return{n:THEMENAME[world.theme[P.y*W+P.x]]||'Caverna',s:'Subterrâneo'};
  const i=P.y*W+P.x;if(world.safe[i]){const c=world.cities.find(c=>P.x>=c.rect.x0&&P.x<=c.rect.x1&&P.y>=c.rect.y0&&P.y<=c.rect.y1);if(c)return{n:c.name,s:'Zona segura'}}
  return{n:BNAME[world.biome[i]]||'Terras Selvagens',s:contOf(P.x,P.y)?CONT[contOf(P.x,P.y)].name:''}}
@@ -3578,6 +3579,7 @@ function update(dt){
    if(stepEnt(P,n[0]-P.x,n[1]-P.y,base))P.path.shift();
    else{const o=occ.get(okey(P.layer,n[0],n[1]));if(o&&o!==P&&P.dest){const p=findPath(P.layer,P.x,P.y,P.dest.x,P.dest.y,P.dest.range||0,2500);P.path=p;if(!p)P.dest=null}else P.path=null}}
   else if(P.pendingNpc){const n=P.pendingNpc;if(cheb(P.x,P.y,n.x,n.y)<=3){P.pendingNpc=null;openNpc(n)}else P.pendingNpc=null}
+  else if(P.pendingObj){const q=P.pendingObj;P.pendingObj=null;if(cheb(P.x,P.y,q.x,q.y)<=2)homeObjDlg(q.kind,q.x,q.y)}
  }
  playerAttackTick(dt);
  // IA
@@ -3616,7 +3618,7 @@ cvs.addEventListener('pointerdown',ev=>{if(!P||paused||P.dead)return;ev.preventD
  if(P.target&&P.target.hp>0&&!(e&&e.type==='npc')){P.manual=true;P.pendingNpc=null;walkTo(tx,ty);return}
  P.outClicks=0;
  if(e&&e.type==='npc'){if(cheb(P.x,P.y,e.x,e.y)<=3){P.path=null;openNpc(e)}else{P.pendingNpc=e;walkTo(e.x,e.y,2)}return}
- P.pendingNpc=null;walkTo(tx,ty)});
+ P.pendingNpc=null;if(homeClick(tx,ty))return;walkTo(tx,ty)});
 cvs.addEventListener('wheel',ev=>{ev.preventDefault();zoom=clamp(zoom*(ev.deltaY<0?1.1:.91),30,90)},{passive:false});
 addEventListener('keydown',ev=>{if(!P||paused)return;if(ev.target&&/INPUT|TEXTAREA/.test(ev.target.tagName))return;const k=ev.key.toLowerCase();
  if(k.startsWith('arrow')||k===' ')ev.preventDefault();keys[k]=true;
@@ -4006,7 +4008,7 @@ function startBossEv(){const bs=Object.values(MON).filter(d=>d.boss&&d.hp>0);if(
  toast('Chefe errante!',d.name+' foi avistado ao '+dirName(pos[0]-P.x,pos[1]-P.y));log('Chefe errante: '+d.name+' (Nv '+d.lvl+') foi avistado ao '+dirName(pos[0]-P.x,pos[1]-P.y)+'. Derrote-o hoje para ganhar um prêmio!','quest');return true}
 function evKill(m){const s=m.spawn;if(s.ev==='inv'&&EV.inv){s.dead=1;EV.inv.left--;if(EV.inv.left<=0)setTimeout(()=>endInvasion(true),400)}
  else if(s.ev==='boss'&&EV.boss){const d=EV.boss.d;s.dead=1;const g=Math.round(d.gold*BAL.G(d.lvl)*20);P.gold+=g;log('Chefe errante derrotado! Bônus: '+fmt(g)+' de ouro.','quest');toast('Chefe errante derrotado!',d.name);P.cnt.wboss=(P.cnt.wboss||0)+1;EV.boss=null;refreshUI()}}
-function evTick(dt){if(!P)return;if(EV.pl!==P){evReset();EV.pl=P;EV.nextInv=gameTime+rr(240,420);EV.chk=0}
+function evTick(dt){if(!P)return;if(EV.pl!==P){evReset();EV.pl=P;EV.nextInv=gameTime+rr(240,420);EV.chk=0;if(typeof homeApplyDeco==='function')homeApplyDeco()}
  if(P.dead){if(EV.inv||EV.boss){evReset();}return}
  EV.chk-=dt;
  const I=EV.inv,B=EV.boss;
@@ -4020,6 +4022,101 @@ function evTick(dt){if(!P)return;if(EV.pl!==P){evReset();EV.pl=P;EV.nextInv=game
  if(EV.inv)t+='<b style="color:#ff8a6a">Invasão: '+EV.inv.city.name+'</b><br>Invasores: '+EV.inv.left+' / '+EV.inv.total+' · '+Math.max(0,Math.ceil(EV.inv.end-gameTime))+'s';
  if(EV.boss){const s=EV.boss.s;const dd=Math.round(dist(P.x,P.y,s.x,s.y));t+=(t?'<br>':'')+'<b style="color:#c080ff">Chefe errante: '+EV.boss.d.name+'</b><br>'+(P.layer===0?dd+' tiles ao '+dirName(s.x-P.x,s.y-P.y):'na superfície')}
  bx.hidden=!t;if(t&&bx._t!==t){bx.innerHTML=t;bx._t=t}}
+
+// ===== ETAPA 16: casas (interior no andar 2), corretores, baú pessoal, cama e decoração =====
+Object.assign(O,{HDOOR:72,HCHEST:73,HBED:74});OBJWALK.add(O.HDOOR);[O.HDOOR,O.HCHEST,O.HBED].forEach(o=>MARG[o]=14);
+const HOME_W=15,HOME_H=11;
+function stageHome(){
+ const g=world.ground[2];let fx=-1,fy=-1;
+ outer:for(let y=8;y<H-HOME_H-8;y+=3)for(let x=8;x<W-HOME_W-8;x+=3){let ok=true;for(let yy=y-3;yy<y+HOME_H+3&&ok;yy++)for(let xx=x-3;xx<x+HOME_W+3;xx++)if(g[yy*W+xx]!==G.CAVEWALL){ok=false;break}if(ok){fx=x;fy=y;break outer}}
+ if(fx<0){world.home=null;return}
+ const o=world.obj[2],vr=world.vr[2];
+ for(let y=0;y<HOME_H;y++)for(let x=0;x<HOME_W;x++){const i=(fy+y)*W+fx+x,ring=y===0||x===0||y===HOME_H-1||x===HOME_W-1;g[i]=G.WOOD;o[i]=ring?O.WALL:0;vr[i]=2}
+ const at=(x,y,ob)=>{o[(fy+y)*W+fx+x]=ob};
+ at(7,HOME_H-1,O.HDOOR);at(2,2,O.HCHEST);at(12,2,O.HBED);
+ world.home={l:2,x:fx,y:fy,spawn:[fx+7,fy+HOME_H-3],door:[fx+7,fy+HOME_H-1],chest:[fx+2,fy+2],bed:[fx+12,fy+2],
+  deco:[[5,2],[9,2],[2,5],[12,5],[4,7],[10,7]].map(p=>[fx+p[0],fy+p[1]])};
+ computeWalk(2);
+ // corretores
+ const taken=new Set(world.npcs.map(n=>n.x+','+n.y));
+ world.cities.forEach((c,ci)=>{if(world.npcs.some(n=>n.id===c.id+'_realtor'))return;let done=false;
+  for(let r=2;r<9&&!done;r++)for(let dy=-r;dy<=r&&!done;dy++)for(let dx=-r;dx<=r&&!done;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;const X=c.spawn.x+dx,Y=c.spawn.y+dy,i=Y*W+X;
+   if(!inb(X,Y)||!world.walk[0][i]||world.obj[0][i]||taken.has(X+','+Y)||!world.safe[i])continue;
+   let free=true;for(const[ax,ay]of[[1,0],[-1,0],[0,1],[0,-1]])if(!world.walk[0][(Y+ay)*W+X+ax])free=false;if(!free)continue;
+   taken.add(X+','+Y);world.npcs.push({id:c.id+'_realtor',city:ci,role:'realtor',name:NAMES1[Math.floor(hash2(ci,77,5)*NAMES1.length)],title:'Corretor',x:X,y:Y,wander:false,look:{}});done=true}})}
+// ---------- sprites ----------
+const _objSprite0=objSprite;
+objSprite=function(o,v){if(o===O.HDOOR||o===O.HCHEST||o===O.HBED)return spr('hm'+o,()=>homeArt(o));return _objSprite0(o,v)};
+function homeArt(o){
+ if(o===O.HDOOR)return mk(64,80,g=>{shadow(g,32,70,28,6,.2);g.fillStyle='#7a2a2a';rrect(g,6,52,52,16,3);g.fill();g.fillStyle='#a84040';rrect(g,10,55,44,10,2);g.fill();ln(g,12,60,52,60,'rgba(255,230,160,.5)',2)});
+ if(o===O.HCHEST)return mk(64,80,g=>{shadow(g,32,70,26,6,.25);g.fillStyle=lin(g,0,30,0,68,'#a8763e','#5a3a1c');rrect(g,8,38,48,30,4);g.fill();g.fillStyle='#c8924e';rrect(g,6,28,52,18,8);g.fill();ln(g,8,46,56,46,'#e8c060',3);g.fillStyle='#e8c060';rrect(g,28,40,8,12,2);g.fill();ell(g,32,46,3,3,'#6a4a10');ln(g,16,30,16,66,'#d8a840',2);ln(g,48,30,48,66,'#d8a840',2)});
+ return mk(64,80,g=>{shadow(g,32,72,30,6,.25);g.fillStyle='#6a4a2a';rrect(g,4,34,56,34,4);g.fill();g.fillStyle='#e8e4d8';rrect(g,6,30,52,24,6);g.fill();g.fillStyle='#c84a4a';rrect(g,6,42,52,20,5);g.fill();g.fillStyle='#f4f0e8';rrect(g,9,32,16,12,5);g.fill();ln(g,8,50,56,50,'rgba(0,0,0,.18)',2)});
+}
+// ---------- dados ----------
+function HOMEd(){const c=P.cnt;if(!c.home)c.home={own:{},chest:[],lv:0,deco:{},ret:null};return c.home}
+const HOME_PRICE=ci=>Math.round(3000*Math.pow(1.45,ci)/100)*100;
+const CHEST_BASE=60,CHEST_STEP=20,CHEST_UP=[5000,15000,45000,135000,400000];
+const chestCap=()=>CHEST_BASE+CHEST_STEP*HOMEd().lv;
+const DECOS=[[0,'Vazio',0],[O.FLOWER,'Vaso de flores',150],[O.BUSH,'Arbusto',100],[O.LAMP,'Lâmpada',300],[O.SHELF,'Estante',800],[O.STATUE,'Estátua',2000]];
+function homeApplyDeco(){const H=world.home;if(!H||!P)return;const d=HOMEd().deco;H.deco.forEach((p,i)=>{const ob=d[i]||0,idx=p[1]*W+p[0];world.obj[2][idx]=ob;world.vr[2][idx]=ob===O.SHELF?0:(i&3)});computeWalk(2)}
+// ---------- corretor ----------
+function dlgRealtor(){dlgRefresh=dlgRealtor;const n=curNpc,b=dlgBody(),H=HOMEd(),cid=world.cities[n.city].id,ci=n.city,o=el('div','opts');
+ if(!world.home){b.appendChild(el('p','say','“Estamos sem imóveis disponíveis por enquanto.”'));opt(o,'Voltar',dlgMain,'ghost');b.appendChild(o);return}
+ const own=!!H.own[cid],price=HOME_PRICE(ci);
+ const c=document.createElement('div');c.className='qcard';c.innerHTML='<h4></h4><p></p><div class="rew"></div>';
+ c.querySelector('h4').textContent='Casa em '+world.cities[ci].name;
+ c.querySelector('p').textContent=own?'Sua casa está pronta: baú pessoal, cama para descansar e espaço para decorar. O baú é o mesmo em todas as suas casas.':'Uma casa aconchegante com baú pessoal ('+CHEST_BASE+' espaços, ampliável), cama que restaura vida e mana e dá bônus de experiência, e espaços para decorar.';
+ c.querySelector('.rew').textContent=own?'Você já é proprietário.':'Preço: '+fmt(price)+' de ouro';b.appendChild(c);
+ if(own)opt(o,'Entrar na minha casa',()=>{H.ret={x:n.x,y:n.y};closeDlg();const[x,y]=world.home.spawn;teleport(2,x,y);homeApplyDeco();log('Você entrou em casa.','quest')},'go');
+ else opt(o,'Comprar casa ('+fmt(price)+' ouro)',()=>{if(P.gold<price){log('Ouro insuficiente.','warn');return}P.gold-=price;H.own[cid]=1;log('Você comprou uma casa em '+world.cities[ci].name+'!','quest');toast('Casa comprada!',world.cities[ci].name);sfx('lvl');refreshUI();saveGame();dlgRealtor()},P.gold>=price?'go':'');
+ opt(o,'Voltar',dlgMain,'ghost');b.appendChild(o)}
+// ---------- baú / cama ----------
+function homeObjDlg(kind,x,y){curNpc={role:'homeobj',id:'h'+kind,x,y,name:kind==='chest'?'Baú da casa':'Cama',title:'Sua casa'};dlgPos={x:P.x,y:P.y};const d=$('dlg');d.hidden=false;
+ const pc=$('dportrait'),g=pc.getContext('2d');g.clearRect(0,0,pc.width,pc.height);g.drawImage(homeArt(kind==='chest'?O.HCHEST:O.HBED),0,-4,pc.width,pc.height+4);
+ $('dname').textContent=curNpc.name;$('dtitle').textContent=curNpc.title;kind==='chest'?dlgChest('dep'):dlgBed()}
+let _restCd=-1e9;
+function dlgBed(){dlgRefresh=dlgBed;const b=dlgBody(),o=el('div','opts');const left=Math.max(0,Math.ceil(_restCd+300-gameTime));
+ b.appendChild(el('p','say','“Uma boa cama restaura as forças e deixa o espírito disposto a aprender.”'));
+ const bn=P.restT>gameTime?Math.ceil((P.restT-gameTime)/60):0;if(bn)b.appendChild(el('p','muted','Bônus de descanso ativo: +10% de XP por mais ~'+bn+' min.'));
+ if(left>0)b.appendChild(el('p','muted','Você poderá descansar de novo em '+left+'s.'));
+ else opt(o,'Descansar (restaura vida e mana, +10% XP por 10 min)',()=>{P.hp=P.maxhp;P.mp=P.maxmp;P.st={};P.restT=gameTime+600;_restCd=gameTime;rings.push({x:P.x,y:P.y,r:1.4,t:0,dur:.7,col:'#a0d0ff'});log('Você descansou: vida, mana restauradas e +10% de XP por 10 minutos.','quest');sfx('lvl');refreshUI();dlgBed()},'go');
+ opt(o,'Fechar',closeDlg,'ghost');b.appendChild(o)}
+function dlgChest(tab){dlgRefresh=()=>dlgChest(tab);const b=dlgBody(),H=HOMEd(),C=H.chest,cap=chestCap();
+ const sum=el('div','bankbox');sum.innerHTML='<div><small>Itens no baú</small><b>'+C.length+' / '+cap+'</b></div><div><small>Ouro</small><b>'+fmt(P.gold)+'</b></div>';b.appendChild(sum);
+ const tabs=el('div','tabs');[['dep','Guardar'],['wd','Retirar'],['up','Ampliar'],['deco','Decorar']].forEach(([k,t])=>{const x=el('button','tab'+(k===tab?' on':''),t);x.onclick=()=>dlgChest(k);tabs.appendChild(x)});b.appendChild(tabs);
+ const list=el('div','list');b.appendChild(list);
+ if(tab==='dep'){let any=false;P.inv.forEach((s,i)=>{const it=ITEMS[s.id];any=true;const w=el('div','btns');
+   const b1=el('button','mini','Guardar<br><small>1</small>');b1.onclick=()=>chestPut(i,1);w.appendChild(b1);
+   if(s.n>1){const b2=el('button','mini','Tudo<br><small>×'+s.n+'</small>');b2.onclick=()=>chestPut(i,s.n);w.appendChild(b2)}
+   const r=itemRow(it,w);if(s.n>1)r.querySelector('b').textContent=it.name+' ×'+s.n;list.appendChild(r)});
+  if(!any)list.appendChild(el('p','muted','Sua mochila está vazia. Itens equipados não podem ser guardados.'))}
+ else if(tab==='wd'){if(!C.length)list.appendChild(el('p','muted','O baú está vazio.'));
+  C.forEach((s,i)=>{const it=ITEMS[s.id];if(!it)return;const w=el('div','btns');
+   const b1=el('button','mini','Retirar<br><small>1</small>');b1.onclick=()=>chestGet(i,1);w.appendChild(b1);
+   if(s.n>1){const b2=el('button','mini','Tudo<br><small>×'+s.n+'</small>');b2.onclick=()=>chestGet(i,s.n);w.appendChild(b2)}
+   const r=itemRow(it,w);if(s.n>1)r.querySelector('b').textContent=it.name+' ×'+s.n;list.appendChild(r)})}
+ else if(tab==='up'){const nx=CHEST_UP[H.lv];
+  if(nx===undefined)list.appendChild(el('p','muted','Seu baú já está no tamanho máximo ('+cap+' espaços).'));
+  else{list.appendChild(el('p','say','Ampliar o baú de '+cap+' para '+(cap+CHEST_STEP)+' espaços.'));const x=el('button','opt'+(P.gold>=nx?' go':''),'Ampliar ('+fmt(nx)+' ouro)');x.onclick=()=>{if(P.gold<nx){log('Ouro insuficiente.','warn');return}P.gold-=nx;H.lv++;log('Baú ampliado para '+chestCap()+' espaços.','quest');sfx('coin');refreshUI();saveGame();dlgChest('up')};list.appendChild(x)}}
+ else{list.appendChild(el('p','muted','Escolha o que colocar em cada espaço da sua casa.'));
+  world.home.deco.forEach((p,i)=>{const cur=HOMEd().deco[i]||0,row=el('div','row');const m=el('div','mid');m.innerHTML='<b></b><small></small>';m.firstChild.textContent='Espaço '+(i+1);m.lastChild.textContent='Atual: '+DECOS.find(d=>d[0]===cur)[1];row.appendChild(m);
+   const sel=el('select');DECOS.forEach(d=>{const op=el('option','',d[1]+(d[2]?' — '+fmt(d[2]):''));op.value=d[0];if(d[0]===cur)op.selected=true;sel.appendChild(op)});
+   sel.onchange=()=>{const v=+sel.value,d=DECOS.find(x=>x[0]===v);if(v===cur)return;if(P.gold<d[2]){log('Ouro insuficiente.','warn');sel.value=cur;return}P.gold-=d[2];HOMEd().deco[i]=v;homeApplyDeco();log('Decoração: '+d[1]+'.','quest');sfx('coin');refreshUI();saveGame();dlgChest('deco')};
+   row.appendChild(sel);list.appendChild(row)})}}
+function chestPut(i,n){const s=P.inv[i];if(!s)return;const it=ITEMS[s.id],C=HOMEd().chest;n=Math.min(n,s.n);let moved=0;
+ if(it.type==='equip'){if(C.length<chestCap()){C.push({id:s.id,n:1});moved=1}}
+ else{const t=C.find(b=>b.id===s.id&&b.n+n<=9999);if(t){t.n+=n;moved=n}else if(C.length<chestCap()){C.push({id:s.id,n});moved=n}}
+ if(!moved){log('O baú está cheio.','warn');return}
+ s.n-=moved;if(s.n<=0)P.inv.splice(i,1);log('Guardado no baú: '+it.name+(moved>1?' ×'+moved:'')+'.');sfx('coin');refreshUI();saveGame();if(dlgRefresh)dlgRefresh()}
+function chestGet(i,n){const C=HOMEd().chest,s=C[i];if(!s)return;const it=ITEMS[s.id];n=Math.min(n,s.n);let got=0;
+ if(it.type==='equip'){if(giveItem(s.id,1))got=1}else{if(giveItem(s.id,n))got=n}
+ if(!got){log('Mochila cheia.','warn');return}
+ s.n-=got;if(s.n<=0)C.splice(i,1);log('Retirado do baú: '+it.name+(got>1?' ×'+got:'')+'.');sfx('coin');refreshUI();saveGame();if(dlgRefresh)dlgRefresh()}
+// ---------- interação com objetos ----------
+function homeClick(tx,ty){if(!world.home||P.layer!==2)return false;const ob=world.obj[2][ty*W+tx];if(ob!==O.HCHEST&&ob!==O.HBED)return false;
+ const kind=ob===O.HCHEST?'chest':'bed';if(cheb(P.x,P.y,tx,ty)<=2){P.path=null;homeObjDlg(kind,tx,ty)}else{P.pendingObj={kind,x:tx,y:ty};walkTo(tx,ty,2)}return true}
+function homeExit(){const H=HOMEd(),r=H.ret||{x:world.cities[0].spawn.x,y:world.cities[0].spawn.y};const[x,y]=freeNear(0,r.x,r.y+1,true);teleport(0,x,y);log('Você saiu de casa.')}
+function inHome(){const h=world.home;return !!(h&&P&&P.layer===2&&P.x>=h.x&&P.x<h.x+HOME_W&&P.y>=h.y&&P.y<h.y+HOME_H)}
 
 // ===== INTERFACE =====
 const $=id=>document.getElementById(id);
@@ -4146,7 +4243,7 @@ function openNpc(n){curNpc=n;dlgPos={x:P.x,y:P.y};const d=$('dlg');d.hidden=fals
  const pc=$('dportrait'),g=pc.getContext('2d');g.clearRect(0,0,pc.width,pc.height);g.drawImage(humanSprite(npcLook(n),'n_'+n.id+'_'+n.x0),-6,-8,pc.width+12,pc.height+12);
  $('dname').textContent=n.name;$('dtitle').textContent=n.title+(n.city!==undefined?' · '+world.cities[n.city].name:'');
  dlgMain()}
-const GREET={boat:'Meu barco cruza o grande oceano. Há terras selvagens além do horizonte, mas só os fortes voltam de lá.',bank:'Bem-vindo ao Banco de Aldora! Seu ouro e seus itens ficam seguros aqui, em qualquer cidade.',temple:'Que a luz o proteja, viajante. Precisa de cura?',weapon:'Armas forjadas com cuidado! O que procura?',armor:'Armaduras para todos os tamanhos de coragem.',alchemy:'Poções frescas! Vida, mana, o que precisar.',general:'Compro tudo o que você trouxer das criaturas. Preços justos!',travel:'Para onde vamos? Só levo a cidades que você já conhece.',guild:'A Guilda sempre precisa de heróis.',plaza1:'Tenho trabalho para quem não tem medo.',plaza2:'Viajante! Pode me ajudar?',guard:'A cidade é segura. Os monstros não passam dos portões.'};
+const GREET={boat:'Meu barco cruza o grande oceano. Há terras selvagens além do horizonte, mas só os fortes voltam de lá.',bank:'Bem-vindo ao Banco de Aldora! Seu ouro e seus itens ficam seguros aqui, em qualquer cidade.',temple:'Que a luz o proteja, viajante. Precisa de cura?',weapon:'Armas forjadas com cuidado! O que procura?',armor:'Armaduras para todos os tamanhos de coragem.',alchemy:'Poções frescas! Vida, mana, o que precisar.',general:'Compro tudo o que você trouxer das criaturas. Preços justos!',travel:'Para onde vamos? Só levo a cidades que você já conhece.',guild:'A Guilda sempre precisa de heróis.',plaza1:'Tenho trabalho para quem não tem medo.',plaza2:'Viajante! Pode me ajudar?',realtor:'Procurando um lar em Aldora? Tenho casas com baú, cama e muito espaço!',guard:'A cidade é segura. Os monstros não passam dos portões.'};
 function dlgBody(){const b=$('dbody');b.innerHTML='';return b}
 function opt(b,t,fn,cls){const x=el('button','opt '+(cls||''),t);x.onclick=fn;b.appendChild(x);return x}
 function dlgMain(){dlgRefresh=dlgMain;const n=curNpc,b=dlgBody();let txt=GREET[n.role]||pick(RUMORS);
@@ -4155,6 +4252,7 @@ function dlgMain(){dlgRefresh=dlgMain;const n=curNpc,b=dlgBody();let txt=GREET[n
  const o=el('div','opts');b.appendChild(o);
  if(['weapon','armor','alchemy','general'].includes(n.role))opt(o,'Comprar e vender',()=>dlgTrade('buy'));
  if(['weapon','armor'].includes(n.role))opt(o,'Forja: reforçar e encantar',()=>dlgForge(null),'go');
+ if(n.role==='realtor')opt(o,'Casas',dlgRealtor,'go');
  if(n.role==='guild'){opt(o,'Missão diária',dlgDaily,'go');opt(o,'Especialização',dlgSpec,'go')}
  if(n.role==='temple'){opt(o,'Curar (grátis)',()=>{P.hp=P.maxhp;P.mp=P.maxmp;rings.push({x:P.x,y:P.y,r:1.4,t:0,dur:.7,col:'#fff0a0'});burst(P.x,P.y,'#fff0a0',20);log('O sacerdote restaurou sua vida e mana.');sfx('lvl');refreshUI()});
   opt(o,P.home===world.cities[n.city].id?'Este templo é seu lar':'Tornar este templo meu lar',()=>{P.home=world.cities[n.city].id;log('Você agora renasce em '+world.cities[n.city].name+'.','quest');dlgMain()})}
