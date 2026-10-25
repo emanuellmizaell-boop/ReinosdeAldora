@@ -1735,7 +1735,7 @@ function houseSprite(w,h,ci,v){const c=CITIES[ci%CITIES.length],wc=hex2(c.wall),
  g.fillStyle=lin(g,0,fy,0,H_,css(shade(wc,.1)),css(shade(wc,-.25)));g.fillRect(8,fy,w*64,fh-2);
  g.fillStyle='rgba(60,40,30,.5)';g.fillRect(8,H_-14,w*64,12);
  for(let x=8;x<w*64+8;x+=22)ln(g,x,H_-14,x,H_-2,'rgba(0,0,0,.25)',1.5);
- const dx=8+Math.floor(w/2)*64+(w%2?0:0)+(w%2?16:-16);
+ const dx=8+Math.floor(w/2)*64+16;
  g.fillStyle=['#5a3a22','#3a4a5a','#6a2a2a','#4a3a2a'][v%4];rrect(g,dx,H_-48,32,46,[14,14,0,0]);g.fill();ln(g,dx+16,H_-46,dx+16,H_-2,'rgba(0,0,0,.35)',1.5);blob(g,dx+25,H_-24,2.6,'#ffe080','#a07a20');
  for(let k=0;k<w;k++){const x=8+k*64+12;if(Math.abs(x-dx)<26)continue;g.fillStyle='#3a2a20';g.fillRect(x-2,fy+10,34,28);g.fillStyle=lin(g,x,fy+12,x+30,fy+36,'#ffe9a0','#e0a850');g.fillRect(x,fy+12,30,24);ln(g,x+15,fy+12,x+15,fy+36,'#3a2a20',2);ln(g,x,fy+24,x+30,fy+24,'#3a2a20',2);g.fillStyle='#7a4a2a';g.fillRect(x-7,fy+12,6,24);g.fillRect(x+31,fy+12,6,24)}
  const top=10,ey=fy+4;
@@ -3054,7 +3054,7 @@ function render(dt){
    const w=im.width*sc,h=im.height*sc,m=(MARG[o]||8)*sc;
    ctx.drawImage(im,(x+.5)*ts+ox-w/2,(y+1)*ts+oy-h+m+(o===O.BOAT?Math.sin(T*1.7+x*.7)*1.8*sc:0),w,h);
    if(o===O.OBELISK||o===O.CRYSTAL||o===O.LAMP){/* brilho aplicado depois */}
-  }else if(d[1]===1){const s=d[2];const im=spr('h'+s.city+'_'+s.w+'x'+s.h+'_'+s.v,()=>houseSprite(s.w,s.h,s.city,s.v));ctx.drawImage(im,s.x*ts+ox-8*sc,(s.y+s.h)*ts+oy-im.height*sc+4*sc,im.width*sc,im.height*sc)}
+  }else if(d[1]===1){const s=d[2];if(homeInside(s))continue;const im=spr('h'+s.city+'_'+s.w+'x'+s.h+'_'+s.v,()=>houseSprite(s.w,s.h,s.city,s.v));ctx.drawImage(im,s.x*ts+ox-8*sc,(s.y+s.h)*ts+oy-im.height*sc+4*sc,im.width*sc,im.height*sc);homeMark(s,ts,ox,oy,sc)}
   else if(d[1]===3){const c=d[2];ctx.globalAlpha=clamp(c.t/6,0,1)*.8;ctx.fillStyle='rgba(120,20,20,.6)';ctx.beginPath();ctx.ellipse((c.x+.5)*ts+ox,(c.y+.7)*ts+oy,ts*.3,ts*.12,0,0,PI2);ctx.fill();ctx.globalAlpha=1}
   else if(d[1]===4)drawDying(d[2],ts,ox,oy);
   else drawEntity(d[2],ts,ox,oy,T);
@@ -3352,7 +3352,6 @@ function onArrive(){const i=P.y*W+P.x,o=world.obj[P.layer][i];
  if(o===O.CAVEIN&&P.layer===0){const e=world.entrances.find(e=>e.x===P.x&&e.y===P.y);if(e&&!e.found){e.found=true;P.ents[e.x+','+e.y]=1;log('Você entrou em uma '+THEMENAME[e.theme]+'. Cuidado com a escuridão!','warn')}const[x,y]=freeNear(1,P.x,P.y+1,true);teleport(1,x,y)}
  else if(o===O.CAVEOUT&&P.layer===1){const[x,y]=freeNear(0,P.x,P.y+1,true);teleport(0,x,y)}
  else if(o===O.STAIRD&&P.layer>=1&&P.layer<3){const L=P.layer+1,[x,y]=freeNear(L,P.x,P.y+1,true);teleport(L,x,y);dungArrive(L)}
- else if(o===O.HDOOR&&P.layer===2){homeExit()}
  else if(o===O.STAIRU&&P.layer>=2){const L=P.layer-1,[x,y]=freeNear(L,P.x,P.y+1,true);teleport(L,x,y)}}
 // ---------- monstros ----------
 function spawnMon(s){const d=MON[s.m];if(!d)return;if(!canEnter({l:s.l,type:'mon'},s.x,s.y))return;
@@ -3749,7 +3748,7 @@ const WX={kind:'clear',next:'clear',amt:0,t:50,zone:'t',flash:0,bolts:[],bt:5,se
 for(let i=0;i<170;i++)WX.seeds.push({x:Math.random(),y:Math.random(),s:Math.random(),v:Math.random()});
 function wxZone(){if(!P||P.layer>=1)return 'u';const b=world.biome[Math.round(P.y)*W+Math.round(P.x)];return b===7||(b===8&&P.y<150)?'s':b===9?'e':b===4?'d':'t'}
 function wxPick(z){const l=WXZ[z];if(!l)return 'clear';let r=Math.random()*l.reduce((a,x)=>a+x[1],0);for(const[k,w]of l){if((r-=w)<0)return k}return 'clear'}
-function wxEff(){return P&&P.layer===0?WX.amt:0}
+function wxEff(){return P&&P.layer===0&&!inHome()?WX.amt:0}
 function wxIcon(){return WX.amt>.4&&WXK[WX.kind]?WXK[WX.kind].i:''}
 function wxDesc(){const k=WXK[WX.kind];return WX.amt>.4&&k&&k.d?k.n+': '+k.d:''}
 function nightF(){return clamp(nightAmt()/.62,0,1)}
@@ -4009,7 +4008,7 @@ function startBossEv(){const bs=Object.values(MON).filter(d=>d.boss&&d.hp>0);if(
  toast('Chefe errante!',d.name+' foi avistado ao '+dirName(pos[0]-P.x,pos[1]-P.y));log('Chefe errante: '+d.name+' (Nv '+d.lvl+') foi avistado ao '+dirName(pos[0]-P.x,pos[1]-P.y)+'. Derrote-o hoje para ganhar um prêmio!','quest');return true}
 function evKill(m){const s=m.spawn;if(s.ev==='inv'&&EV.inv){s.dead=1;EV.inv.left--;if(EV.inv.left<=0)setTimeout(()=>endInvasion(true),400)}
  else if(s.ev==='boss'&&EV.boss){const d=EV.boss.d;s.dead=1;const g=Math.round(d.gold*BAL.G(d.lvl)*20);P.gold+=g;log('Chefe errante derrotado! Bônus: '+fmt(g)+' de ouro.','quest');toast('Chefe errante derrotado!',d.name);P.cnt.wboss=(P.cnt.wboss||0)+1;EV.boss=null;refreshUI()}}
-function evTick(dt){if(!P)return;if(EV.pl!==P){evReset();EV.pl=P;EV.nextInv=gameTime+rr(240,420);EV.chk=0;if(typeof homeApplyDeco==='function')homeApplyDeco()}
+function evTick(dt){if(!P)return;if(EV.pl!==P){evReset();EV.pl=P;EV.nextInv=gameTime+rr(240,420);EV.chk=0;if(typeof homeApplyAll==='function'){homeApplyAll();if(P.layer===2&&!dungAt()){const c=world.cities.find(c=>c.id===P.home)||world.cities[0];const[x,y]=freeNear(0,c.spawn.x,c.spawn.y,true);teleport(0,x,y,true)}}}
  if(P.dead){if(EV.inv||EV.boss){evReset();}return}
  EV.chk-=dt;
  const I=EV.inv,B=EV.boss;
@@ -4024,21 +4023,9 @@ function evTick(dt){if(!P)return;if(EV.pl!==P){evReset();EV.pl=P;EV.nextInv=game
  if(EV.boss){const s=EV.boss.s;const dd=Math.round(dist(P.x,P.y,s.x,s.y));t+=(t?'<br>':'')+'<b style="color:#c080ff">Chefe errante: '+EV.boss.d.name+'</b><br>'+(P.layer===0?dd+' tiles ao '+dirName(s.x-P.x,s.y-P.y):'na superfície')}
  bx.hidden=!t;if(t&&bx._t!==t){bx.innerHTML=t;bx._t=t}}
 
-// ===== ETAPA 16: casas (interior no andar 2), corretores, baú pessoal, cama e decoração =====
-Object.assign(O,{HDOOR:72,HCHEST:73,HBED:74});OBJWALK.add(O.HDOOR);[O.HDOOR,O.HCHEST,O.HBED].forEach(o=>MARG[o]=14);
-const HOME_W=15,HOME_H=11;
+// ===== ETAPA 16 (v2): casas reais no mapa da cidade, corretores, baú pessoal, cama e decoração =====
+Object.assign(O,{HCHEST:73,HBED:74});[O.HCHEST,O.HBED].forEach(o=>{MARG[o]=14});
 function stageHome(){
- const g=world.ground[2];let fx=-1,fy=-1;
- outer:for(let y=8;y<H-HOME_H-8;y+=3)for(let x=8;x<W-HOME_W-8;x+=3){let ok=true;for(let yy=y-3;yy<y+HOME_H+3&&ok;yy++)for(let xx=x-3;xx<x+HOME_W+3;xx++)if(g[yy*W+xx]!==G.CAVEWALL){ok=false;break}if(ok){fx=x;fy=y;break outer}}
- if(fx<0){world.home=null;return}
- const o=world.obj[2],vr=world.vr[2];
- for(let y=0;y<HOME_H;y++)for(let x=0;x<HOME_W;x++){const i=(fy+y)*W+fx+x,ring=y===0||x===0||y===HOME_H-1||x===HOME_W-1;g[i]=G.WOOD;o[i]=ring?O.WALL:0;vr[i]=2}
- const at=(x,y,ob)=>{o[(fy+y)*W+fx+x]=ob};
- at(7,HOME_H-1,O.HDOOR);at(2,2,O.HCHEST);at(12,2,O.HBED);
- world.home={l:2,x:fx,y:fy,spawn:[fx+7,fy+HOME_H-3],door:[fx+7,fy+HOME_H-1],chest:[fx+2,fy+2],bed:[fx+12,fy+2],
-  deco:[[5,2],[9,2],[2,5],[12,5],[4,7],[10,7]].map(p=>[fx+p[0],fy+p[1]])};
- computeWalk(2);
- // corretores
  const taken=new Set(world.npcs.map(n=>n.x+','+n.y));
  world.cities.forEach((c,ci)=>{if(world.npcs.some(n=>n.id===c.id+'_realtor'))return;let done=false;
   for(let r=2;r<9&&!done;r++)for(let dy=-r;dy<=r&&!done;dy++)for(let dx=-r;dx<=r&&!done;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;const X=c.spawn.x+dx,Y=c.spawn.y+dy,i=Y*W+X;
@@ -4047,32 +4034,54 @@ function stageHome(){
    taken.add(X+','+Y);world.npcs.push({id:c.id+'_realtor',city:ci,role:'realtor',name:NAMES1[Math.floor(hash2(ci,77,5)*NAMES1.length)],title:'Corretor',x:X,y:Y,wander:false,look:{}});done=true}})}
 // ---------- sprites ----------
 const _objSprite0=objSprite;
-objSprite=function(o,v){if(o===O.HDOOR||o===O.HCHEST||o===O.HBED)return spr('hm'+o,()=>homeArt(o));return _objSprite0(o,v)};
+objSprite=function(o,v){if(o===O.HCHEST||o===O.HBED)return spr('hm'+o,()=>homeArt(o));return _objSprite0(o,v)};
 function homeArt(o){
- if(o===O.HDOOR)return mk(64,80,g=>{shadow(g,32,70,28,6,.2);g.fillStyle='#7a2a2a';rrect(g,6,52,52,16,3);g.fill();g.fillStyle='#a84040';rrect(g,10,55,44,10,2);g.fill();ln(g,12,60,52,60,'rgba(255,230,160,.5)',2)});
  if(o===O.HCHEST)return mk(64,80,g=>{shadow(g,32,70,26,6,.25);g.fillStyle=lin(g,0,30,0,68,'#a8763e','#5a3a1c');rrect(g,8,38,48,30,4);g.fill();g.fillStyle='#c8924e';rrect(g,6,28,52,18,8);g.fill();ln(g,8,46,56,46,'#e8c060',3);g.fillStyle='#e8c060';rrect(g,28,40,8,12,2);g.fill();ell(g,32,46,3,3,'#6a4a10');ln(g,16,30,16,66,'#d8a840',2);ln(g,48,30,48,66,'#d8a840',2)});
  return mk(64,80,g=>{shadow(g,32,72,30,6,.25);g.fillStyle='#6a4a2a';rrect(g,4,34,56,34,4);g.fill();g.fillStyle='#e8e4d8';rrect(g,6,30,52,24,6);g.fill();g.fillStyle='#c84a4a';rrect(g,6,42,52,20,5);g.fill();g.fillStyle='#f4f0e8';rrect(g,9,32,16,12,5);g.fill();ln(g,8,50,56,50,'rgba(0,0,0,.18)',2)});
 }
-// ---------- dados ----------
-function HOMEd(){const c=P.cnt;if(!c.home)c.home={own:{},chest:[],lv:0,deco:{},ret:null};return c.home}
+// ---------- casas ----------
+function HOMEd(){const c=P.cnt;if(!c.home)c.home={own:{},chest:[],lv:0,deco:{}};const h=c.home;
+ for(const k of Object.keys(h.own))if(k.indexOf(':')<0){h.own[k+':0']=1;delete h.own[k]}if(!h.deco)h.deco={};if(Array.isArray(h.deco))h.deco={};return h}
 const HOME_PRICE=ci=>Math.round(3000*Math.pow(1.45,ci)/100)*100;
+const housePrice=(s)=>Math.round(HOME_PRICE(s.city)*(s.w*s.h)/30/100)*100||100;
 const CHEST_BASE=60,CHEST_STEP=20,CHEST_UP=[5000,15000,45000,135000,400000];
 const chestCap=()=>CHEST_BASE+CHEST_STEP*HOMEd().lv;
 const DECOS=[[0,'Vazio',0],[O.FLOWER,'Vaso de flores',150],[O.BUSH,'Arbusto',100],[O.LAMP,'Lâmpada',300],[O.SHELF,'Estante',800],[O.STATUE,'Estátua',2000]];
-function homeApplyDeco(){const H=world.home;if(!H||!P)return;const d=HOMEd().deco;H.deco.forEach((p,i)=>{const ob=d[i]||0,idx=p[1]*W+p[0];world.obj[2][idx]=ob;world.vr[2][idx]=ob===O.SHELF?0:(i&3)});computeWalk(2)}
+function cityHouses(ci){if(!world._hs)world._hs={};if(!world._hs[ci]){world._hs[ci]=world.structs.filter(s=>s.kind==='house'&&s.city===ci);world._hs[ci].forEach((s,i)=>{s.hid=ci+':'+i;s.hn=i+1})}return world._hs[ci]}
+function allHouses(){if(!world._ah){world._ah=[];world.cities.forEach((c,ci)=>cityHouses(ci).forEach(s=>world._ah.push(s)))}return world._ah}
+const houseOwned=s=>!!(P&&s.hid&&HOMEd().own[s.hid]);
+const houseDoor=s=>[s.x+(s.w>>1),s.y+s.h-1];
+function houseSlots(s){const sl=[[s.x+2,s.y+1],[s.x+s.w-3,s.y+1],[s.x+1,s.y+s.h-2],[s.x+s.w-2,s.y+s.h-2]],o=[];sl.forEach(p=>{if(!o.some(q=>q[0]===p[0]&&q[1]===p[1]))o.push(p)});return o}
+function houseSave(s){if(s.og)return;s.og=[];s.oo=[];s.ov=[];for(let y=s.y;y<s.y+s.h;y++)for(let x=s.x;x<s.x+s.w;x++){const i=y*W+x;s.og.push(world.ground[0][i]);s.oo.push(world.obj[0][i]);s.ov.push(world.vr[0][i])}}
+function houseSetWalk(s){for(let y=s.y;y<s.y+s.h;y++)for(let x=s.x;x<s.x+s.w;x++){const i=y*W+x;world.walk[0][i]=GT[world.ground[0][i]].w&&OBJWALK.has(world.obj[0][i])?1:0}}
+function houseCarve(s){houseSave(s);const[dx,dy]=houseDoor(s),H=HOMEd(),dec=H.deco[s.hid]||{},sl=houseSlots(s);
+ for(let y=s.y;y<s.y+s.h;y++)for(let x=s.x;x<s.x+s.w;x++){const i=y*W+x,ring=y===s.y||y===s.y+s.h-1||x===s.x||x===s.x+s.w-1;world.ground[0][i]=G.WOOD;world.obj[0][i]=ring?O.WALL:0;world.vr[0][i]=s.city}
+ world.obj[0][dy*W+dx]=0;
+ world.obj[0][(s.y+1)*W+s.x+1]=O.HCHEST;world.obj[0][(s.y+1)*W+s.x+s.w-2]=O.HBED;
+ sl.forEach((p,k)=>{const ob=dec[k]||0;world.obj[0][p[1]*W+p[0]]=ob;world.vr[0][p[1]*W+p[0]]=ob===O.SHELF?0:(k&3)});
+ houseSetWalk(s)}
+function houseRestore(s){if(!s.og)return;let k=0;for(let y=s.y;y<s.y+s.h;y++)for(let x=s.x;x<s.x+s.w;x++){const i=y*W+x;world.ground[0][i]=s.og[k];world.obj[0][i]=s.oo[k];world.vr[0][i]=s.ov[k];k++}houseSetWalk(s)}
+function homeApplyAll(){if(!P||!world)return;for(const s of allHouses()){if(houseOwned(s))houseCarve(s);else houseRestore(s)}}
+function houseAt(x,y){for(const s of allHouses())if(x>=s.x&&x<s.x+s.w&&y>=s.y&&y<s.y+s.h)return s;return null}
+function homeInside(s){return !!(P&&P.layer===0&&houseOwned(s)&&P.x>=s.x&&P.x<s.x+s.w&&P.y>=s.y&&P.y<s.y+s.h)}
+function inHome(){if(!P||P.layer!==0)return false;const s=houseAt(P.x,P.y);return !!(s&&houseOwned(s))}
+function homeMark(s,ts,ox,oy,sc){if(!houseOwned(s))return;const[dx]=houseDoor(s),x=(dx+.5)*ts+ox,y=(s.y+s.h)*ts+oy-56*sc;
+ ctx.save();ctx.textAlign='center';ctx.font='700 '+Math.max(10,Math.round(11*sc))+'px system-ui';ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.strokeText('Sua casa',x,y);ctx.fillStyle='#8aff9a';ctx.fillText('Sua casa',x,y);ctx.restore()}
+function homeIcon(g,x,y,r){g.save();g.fillStyle='#6aff8a';g.strokeStyle='#04210c';g.lineWidth=2;g.beginPath();g.moveTo(x,y-r);g.lineTo(x+r,y-r*.1);g.lineTo(x+r*.7,y-r*.1);g.lineTo(x+r*.7,y+r*.8);g.lineTo(x-r*.7,y+r*.8);g.lineTo(x-r*.7,y-r*.1);g.lineTo(x-r,y-r*.1);g.closePath();g.stroke();g.fill();g.restore()}
+function homeMarksMini(g,R,k,S){if(P.layer!==0)return;for(const s of allHouses()){if(!houseOwned(s))continue;const x=(s.x+s.w/2-P.x+R)*k,y=(s.y+s.h/2-P.y+R)*k;if(x<4||y<4||x>S-4||y>S-4)continue;homeIcon(g,x,y,5)}}
+function homeMarksMap(g,k){if(P.layer!==0)return;for(const s of allHouses()){if(!houseOwned(s))continue;homeIcon(g,(s.x+s.w/2)*k,(s.y+s.h/2)*k,7)}}
 // ---------- corretor ----------
-function dlgRealtor(){dlgRefresh=dlgRealtor;const n=curNpc,b=dlgBody(),H=HOMEd(),cid=world.cities[n.city].id,ci=n.city,o=el('div','opts');
- if(!world.home){b.appendChild(el('p','say','“Estamos sem imóveis disponíveis por enquanto.”'));opt(o,'Voltar',dlgMain,'ghost');b.appendChild(o);return}
- const own=!!H.own[cid],price=HOME_PRICE(ci);
- const c=document.createElement('div');c.className='qcard';c.innerHTML='<h4></h4><p></p><div class="rew"></div>';
- c.querySelector('h4').textContent='Casa em '+world.cities[ci].name;
- c.querySelector('p').textContent=own?'Sua casa está pronta: baú pessoal, cama para descansar e espaço para decorar. O baú é o mesmo em todas as suas casas.':'Uma casa aconchegante com baú pessoal ('+CHEST_BASE+' espaços, ampliável), cama que restaura vida e mana e dá bônus de experiência, e espaços para decorar.';
- c.querySelector('.rew').textContent=own?'Você já é proprietário.':'Preço: '+fmt(price)+' de ouro';b.appendChild(c);
- if(own)opt(o,'Entrar na minha casa',()=>{H.ret={x:n.x,y:n.y};closeDlg();const[x,y]=world.home.spawn;teleport(2,x,y);homeApplyDeco();log('Você entrou em casa.','quest')},'go');
- else opt(o,'Comprar casa ('+fmt(price)+' ouro)',()=>{if(P.gold<price){log('Ouro insuficiente.','warn');return}P.gold-=price;H.own[cid]=1;log('Você comprou uma casa em '+world.cities[ci].name+'!','quest');toast('Casa comprada!',world.cities[ci].name);sfx('lvl');refreshUI();saveGame();dlgRealtor()},P.gold>=price?'go':'');
+function dlgRealtor(){dlgRefresh=dlgRealtor;const n=curNpc,b=dlgBody(),H=HOMEd(),ci=n.city,hs=cityHouses(ci),o=el('div','opts');
+ b.appendChild(el('p','say','“'+(hs.length?'Estas são as casas de '+world.cities[ci].name+'. Quando comprar, marco a sua no mapa. O baú é o mesmo em todas as suas casas.':'Não há casas à venda aqui.')+'”'));
+ const list=el('div','list');b.appendChild(list);
+ hs.forEach(s=>{const own=houseOwned(s),pr=housePrice(s),r=el('div','row');const m=el('div','mid');m.innerHTML='<b></b><small></small>';m.firstChild.textContent='Casa '+s.hn+' · '+s.w+'×'+s.h;
+  m.lastChild.textContent=own?'Sua casa — marcada no mapa':'Preço: '+fmt(pr)+' de ouro'+' · porta trancada até a compra';r.appendChild(m);
+  if(!own){const bt=el('button','mini'+(P.gold>=pr?' go':''),'Comprar');bt.onclick=()=>{if(P.gold<pr){log('Ouro insuficiente.','warn');return}P.gold-=pr;H.own[s.hid]=1;homeApplyAll();log('Você comprou a Casa '+s.hn+' de '+world.cities[ci].name+'! O corretor a marcou no seu mapa.','quest');toast('Casa comprada!','Marcada no mapa');sfx('lvl');refreshUI();saveGame();dlgRealtor()};r.appendChild(bt)}
+  list.appendChild(r)});
  opt(o,'Voltar',dlgMain,'ghost');b.appendChild(o)}
 // ---------- baú / cama ----------
-function homeObjDlg(kind,x,y){curNpc={role:'homeobj',id:'h'+kind,x,y,name:kind==='chest'?'Baú da casa':'Cama',title:'Sua casa'};dlgPos={x:P.x,y:P.y};const d=$('dlg');d.hidden=false;
+let _curHouse=null;
+function homeObjDlg(kind,x,y){_curHouse=houseAt(x,y);curNpc={role:'homeobj',id:'h'+kind,x,y,name:kind==='chest'?'Baú da casa':'Cama',title:'Sua casa'};dlgPos={x:P.x,y:P.y};const d=$('dlg');d.hidden=false;
  const pc=$('dportrait'),g=pc.getContext('2d');g.clearRect(0,0,pc.width,pc.height);g.drawImage(homeArt(kind==='chest'?O.HCHEST:O.HBED),0,-4,pc.width,pc.height+4);
  $('dname').textContent=curNpc.name;$('dtitle').textContent=curNpc.title;kind==='chest'?dlgChest('dep'):dlgBed()}
 let _restCd=-1e9;
@@ -4099,10 +4108,11 @@ function dlgChest(tab){dlgRefresh=()=>dlgChest(tab);const b=dlgBody(),H=HOMEd(),
  else if(tab==='up'){const nx=CHEST_UP[H.lv];
   if(nx===undefined)list.appendChild(el('p','muted','Seu baú já está no tamanho máximo ('+cap+' espaços).'));
   else{list.appendChild(el('p','say','Ampliar o baú de '+cap+' para '+(cap+CHEST_STEP)+' espaços.'));const x=el('button','opt'+(P.gold>=nx?' go':''),'Ampliar ('+fmt(nx)+' ouro)');x.onclick=()=>{if(P.gold<nx){log('Ouro insuficiente.','warn');return}P.gold-=nx;H.lv++;log('Baú ampliado para '+chestCap()+' espaços.','quest');sfx('coin');refreshUI();saveGame();dlgChest('up')};list.appendChild(x)}}
- else{list.appendChild(el('p','muted','Escolha o que colocar em cada espaço da sua casa.'));
-  world.home.deco.forEach((p,i)=>{const cur=HOMEd().deco[i]||0,row=el('div','row');const m=el('div','mid');m.innerHTML='<b></b><small></small>';m.firstChild.textContent='Espaço '+(i+1);m.lastChild.textContent='Atual: '+DECOS.find(d=>d[0]===cur)[1];row.appendChild(m);
+ else{const hs=_curHouse;if(!hs){list.appendChild(el('p','muted','Abra o baú dentro de uma casa para decorar.'));return}
+  list.appendChild(el('p','muted','Decoração da Casa '+hs.hn+' de '+world.cities[hs.city].name+':'));
+  houseSlots(hs).forEach((p,i)=>{const dd=H.deco[hs.hid]||(H.deco[hs.hid]={}),cur=dd[i]||0,row=el('div','row');const m=el('div','mid');m.innerHTML='<b></b><small></small>';m.firstChild.textContent='Espaço '+(i+1);m.lastChild.textContent='Atual: '+DECOS.find(d=>d[0]===cur)[1];row.appendChild(m);
    const sel=el('select');DECOS.forEach(d=>{const op=el('option','',d[1]+(d[2]?' — '+fmt(d[2]):''));op.value=d[0];if(d[0]===cur)op.selected=true;sel.appendChild(op)});
-   sel.onchange=()=>{const v=+sel.value,d=DECOS.find(x=>x[0]===v);if(v===cur)return;if(P.gold<d[2]){log('Ouro insuficiente.','warn');sel.value=cur;return}P.gold-=d[2];HOMEd().deco[i]=v;homeApplyDeco();log('Decoração: '+d[1]+'.','quest');sfx('coin');refreshUI();saveGame();dlgChest('deco')};
+   sel.onchange=()=>{const v=+sel.value,d=DECOS.find(x=>x[0]===v);if(v===cur)return;if(P.gold<d[2]){log('Ouro insuficiente.','warn');sel.value=cur;return}P.gold-=d[2];dd[i]=v;houseCarve(hs);log('Decoração: '+d[1]+'.','quest');sfx('coin');refreshUI();saveGame();dlgChest('deco')};
    row.appendChild(sel);list.appendChild(row)})}}
 function chestPut(i,n){const s=P.inv[i];if(!s)return;const it=ITEMS[s.id],C=HOMEd().chest;n=Math.min(n,s.n);let moved=0;
  if(it.type==='equip'){if(C.length<chestCap()){C.push({id:s.id,n:1});moved=1}}
@@ -4113,11 +4123,9 @@ function chestGet(i,n){const C=HOMEd().chest,s=C[i];if(!s)return;const it=ITEMS[
  if(it.type==='equip'){if(giveItem(s.id,1))got=1}else{if(giveItem(s.id,n))got=n}
  if(!got){log('Mochila cheia.','warn');return}
  s.n-=got;if(s.n<=0)C.splice(i,1);log('Retirado do baú: '+it.name+(got>1?' ×'+got:'')+'.');sfx('coin');refreshUI();saveGame();if(dlgRefresh)dlgRefresh()}
-// ---------- interação com objetos ----------
-function homeClick(tx,ty){if(!world.home||P.layer!==2)return false;const ob=world.obj[2][ty*W+tx];if(ob!==O.HCHEST&&ob!==O.HBED)return false;
+// ---------- interação ----------
+function homeClick(tx,ty){if(P.layer!==0)return false;const ob=world.obj[0][ty*W+tx];if(ob!==O.HCHEST&&ob!==O.HBED)return false;const s=houseAt(tx,ty);if(!s||!houseOwned(s))return false;
  const kind=ob===O.HCHEST?'chest':'bed';if(cheb(P.x,P.y,tx,ty)<=2){P.path=null;homeObjDlg(kind,tx,ty)}else{P.pendingObj={kind,x:tx,y:ty};walkTo(tx,ty,2)}return true}
-function homeExit(){const H=HOMEd(),r=H.ret||{x:world.cities[0].spawn.x,y:world.cities[0].spawn.y};const[x,y]=freeNear(0,r.x,r.y+1,true);teleport(0,x,y);log('Você saiu de casa.')}
-function inHome(){const h=world.home;return !!(h&&P&&P.layer===2&&P.x>=h.x&&P.x<h.x+HOME_W&&P.y>=h.y&&P.y<h.y+HOME_H)}
 
 // ===== INTERFACE =====
 const $=id=>document.getElementById(id);
@@ -4179,7 +4187,7 @@ function drawMini(){const S=mm.width,R=44;mg.fillStyle=P.layer?'#08060c':'#0f3a6
  if(P.layer===0)drawMiniBiomes(mg,R,k,S);
  if(P.layer===0){mg.font='700 9px system-ui';mg.textAlign='center';mg.textBaseline='alphabetic';for(const c of world.cities){if(!P.cities[c.id]&&!seen[0][(c.y>>2)*(W>>2)+(c.x>>2)])continue;const x=(c.x-P.x+R)*k,y=(c.y-P.y+R)*k;if(x<0||y<0||x>S||y>S)continue;mg.fillStyle='#ffd070';mg.fillRect(x-3,y-3,6,6);mg.fillStyle='#fff';mg.strokeStyle='#000';mg.lineWidth=2.5;mg.strokeText(c.name,x,y-6);mg.fillText(c.name,x,y-6)}}
  for(const m of monsters){if(m.l!==P.layer||cheb(m.x,m.y,P.x,P.y)>wxVis(R))continue;mg.fillStyle=m.def.passive?'#aaa':'#ff5040';mg.fillRect((m.x-P.x+R)*k-1,(m.y-P.y+R)*k-1,3,3)}
- mg.fillStyle='#fff';mg.beginPath();mg.arc(S/2,S/2,4,0,PI2);mg.fill();mg.strokeStyle='#e0b050';mg.lineWidth=2;mg.stroke()}
+ homeMarksMini(mg,R,k,S);mg.fillStyle='#fff';mg.beginPath();mg.arc(S/2,S/2,4,0,PI2);mg.fill();mg.strokeStyle='#e0b050';mg.lineWidth=2;mg.stroke()}
 // ---------- mapa-múndi ----------
 let mapZ=1,mapLast=0;const MAPZ=[1,1.5,2,3,4];
 function setMapZoom(z,keepCenter,at){const sc=$('mapscroll'),c=$('mapc');
@@ -4193,7 +4201,7 @@ function drawMap(){const c=$('mapc'),S=c.width,VH=P.layer?H:MAPVH;if(c.height!==
  g.textAlign='center';g.font='700 13px system-ui';g.lineWidth=3;g.strokeStyle='rgba(0,0,0,.85)';
  if(P.layer===0){g.save();g.font='700 '+Math.round(Math.min(S,900)/30)+'px Cinzel,serif';g.textAlign='center';g.lineWidth=4;g.strokeStyle='rgba(0,0,0,.7)';g.fillStyle='rgba(255,226,150,.9)';[[190,16],[560,30],[300,438],[760,438],[900,26],[600,818]].forEach(([wx,wy],i)=>{if(!world.cities.some(c=>(c.cont||0)===i&&P.cities[c.id]))return;const t=CONT[i].name.toUpperCase(),hw=g.measureText(t).width/2,X=clamp(wx*k,hw+4,S-hw-4);g.strokeText(t,X,wy*k);g.fillText(t,X,wy*k)});g.restore();drawBiomeLabels(g,x=>x*k,y=>y*k,k,'700 '+Math.max(10,Math.round(Math.min(S,900)/48))+'px system-ui',S,6);g.textAlign='center';g.textBaseline='alphabetic';g.lineWidth=3;g.strokeStyle='rgba(0,0,0,.85)';g.font='700 13px system-ui';
   for(const c of world.cities){const x=c.x*k,y=c.y*k,f=P.cities[c.id]||seen[0][(c.y>>2)*(W>>2)+(c.x>>2)];g.fillStyle=f?'#ffd070':'#8a8a8a';g.beginPath();g.rect(x-5,y-5,10,10);g.fill();g.stroke();if(f){g.strokeText(c.name,x,y-10);g.fillStyle='#fff';g.fillText(c.name,x,y-10)}}
-  for(const p of world.pois){if(!p.found)continue;g.fillStyle='#7af0ff';g.beginPath();g.moveTo(p.x*k,p.y*k-6);g.lineTo(p.x*k+5,p.y*k+4);g.lineTo(p.x*k-5,p.y*k+4);g.fill();g.font='600 11px system-ui';g.strokeText(p.name,p.x*k,p.y*k-9);g.fillStyle='#cfe';g.fillText(p.name,p.x*k,p.y*k-9)}
+  homeMarksMap(g,k);for(const p of world.pois){if(!p.found)continue;g.fillStyle='#7af0ff';g.beginPath();g.moveTo(p.x*k,p.y*k-6);g.lineTo(p.x*k+5,p.y*k+4);g.lineTo(p.x*k-5,p.y*k+4);g.fill();g.font='600 11px system-ui';g.strokeText(p.name,p.x*k,p.y*k-9);g.fillStyle='#cfe';g.fillText(p.name,p.x*k,p.y*k-9)}
   for(const e of world.entrances){if(!e.found)continue;g.fillStyle='#1a1018';g.strokeStyle='#e0b050';g.lineWidth=2;g.beginPath();g.arc(e.x*k,e.y*k,4,0,PI2);g.fill();g.stroke();g.lineWidth=3;g.strokeStyle='rgba(0,0,0,.85)'}}
  const bl=(Math.sin(gameTime*6)+1)/2;g.fillStyle='rgba(255,255,255,'+(.6+bl*.4)+')';g.beginPath();g.arc(P.x*k,P.y*k,5,0,PI2);g.fill();g.strokeStyle='#e04030';g.lineWidth=2;g.stroke();
  $('maptitle').textContent=P.layer>=2?'Mapa da masmorra':P.layer?'Mapa das cavernas':'Mapa-múndi de Aldora'}
