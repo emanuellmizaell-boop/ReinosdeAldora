@@ -336,7 +336,10 @@ const expFor=L=>L<=1?0:Math.floor(30*Math.pow(L-1,2.25));
 const BAL={H:(L,b)=>1+Math.max(0,L-60)/280*(b?0:1),D:(L,b)=>b?1:1+Math.max(0,L-100)/1500,G:L=>1+L/60,
  kp:[[1,2],[10,3],[50,5],[100,8],[200,13],[400,18],[700,25],[900,40]],
  K(L){const p=this.kp;if(L<=1)return p[0][1];for(let i=1;i<p.length;i++)if(L<=p[i][0]){const a=p[i-1],b=p[i];return a[1]+(b[1]-a[1])*(L-a[0])/(b[0]-a[0])}return p[p.length-1][1]},
- X(d){const L=Math.max(1,d.lvl),base=6+L*L*.75+L*4,st=expFor(L+1)-expFor(L);return Math.max(1,Math.round(st/this.K(L)*d.exp/base))}};
+ pw(d){if(d._pw)return d._pw;const q=m=>Math.sqrt(m.hp*Math.max(1,m.dmg)),L=d.lvl,ls=Object.values(MON).filter(m=>!m.boss&&!m.passive&&m.dmg>0&&Math.abs(m.lvl-L)<=6).map(q).sort((a,b)=>a-b);
+  const ref=ls.length?ls[ls.length>>1]:q(d);return d._pw=d.passive?1:Math.min(2.5,Math.max(.75,Math.pow(q(d)/ref,.8)))},
+ lv(dl){return dl>=0?Math.min(4,1+dl*.06):Math.max(.15,1+(dl+8)*.04)},
+ X(d){const L=Math.max(1,d.lvl),base=6+L*L*.75+L*4,st=expFor(L+1)-expFor(L);return Math.max(1,Math.round(st/this.K(L)*(d.passive?d.exp/base:1)*this.pw(d)*(typeof P!=='undefined'&&P?this.lv(d.lvl-P.lvl):1)))}};
 
 // ===== CIDADES =====
 const CITIES=[
@@ -4127,6 +4130,42 @@ function chestGet(i,n){const C=HOMEd().chest,s=C[i];if(!s)return;const it=ITEMS[
 // ---------- interação ----------
 function homeClick(tx,ty){if(P.layer!==0)return false;const ob=world.obj[0][ty*W+tx];if(ob!==O.HCHEST&&ob!==O.HBED&&ob!==O.HBED2)return false;const s=houseAt(tx,ty);if(!s||!houseOwned(s))return false;
  const kind=ob===O.HCHEST?'chest':'bed';if(cheb(P.x,P.y,tx,ty)<=2){P.path=null;homeObjDlg(kind,tx,ty)}else{P.pendingObj={kind,x:tx,y:ty};walkTo(tx,ty,2)}return true}
+
+// ===== ETAPA 17: marcadores de escadas/cavernas e de eventos no minimapa e no mapa-múndi =====
+const _stairCache={};
+function stairList(l){if(_stairCache[l]&&_stairCache[l].w===world)return _stairCache[l].a;const o=world.obj[l],a=[];
+ for(let i=0;i<N;i++){const v=o[i];if(v===O.CAVEOUT||v===O.STAIRD||v===O.STAIRU)a.push([i%W,(i/W)|0,v])}
+ _stairCache[l]={w:world,a};return a}
+function markIcon(g,x,y,r,kind){const pu=1+Math.sin(performance.now()/260)*.12,R=r*pu;g.save();g.lineJoin='round';
+ const col={ent:'#ff9a3a',down:'#ff9a3a',up:'#6ab8ff',out:'#9aff9a',inv:'#ff4a3a',boss:'#c070ff'}[kind];
+ g.fillStyle='rgba(8,6,12,.88)';g.strokeStyle=col;g.lineWidth=Math.max(1.5,r*.28);g.beginPath();g.arc(x,y,R,0,Math.PI*2);g.fill();g.stroke();
+ g.fillStyle=col;g.beginPath();
+ if(kind==='ent'||kind==='down'){g.moveTo(x-R*.5,y-R*.3);g.lineTo(x+R*.5,y-R*.3);g.lineTo(x,y+R*.55)}
+ else if(kind==='up'||kind==='out'){g.moveTo(x-R*.5,y+R*.3);g.lineTo(x+R*.5,y+R*.3);g.lineTo(x,y-R*.55)}
+ else if(kind==='inv'){g.rect(x-R*.12,y-R*.55,R*.24,R*.6);g.rect(x-R*.12,y+R*.2,R*.24,R*.24)}
+ else{g.arc(x,y-R*.1,R*.42,0,Math.PI*2);g.rect(x-R*.25,y+R*.2,R*.5,R*.3)}
+ g.fill();g.restore()}
+function evTargets(){const o=[];if(typeof EV==='undefined'||!P||P.layer!==0)return o;
+ if(EV.inv){const c=EV.inv.city;o.push([c.x,c.y,'inv','Invasão: '+c.name])}
+ if(EV.boss){const s=EV.boss.s,e=s.ent;o.push([e?e.x:s.x,e?e.y:s.y,'boss','Chefe errante: '+EV.boss.d.name])}return o}
+function stairTargets(){const o=[];if(!P)return o;const l=P.layer;
+ if(l===0){for(const e of world.entrances)if(e.found)o.push([e.x,e.y,'ent','Caverna'])}
+ else{const sn=seen[l];for(const[x,y,v]of stairList(l)){if(!sn[(y>>2)*(W>>2)+(x>>2)])continue;o.push([x,y,v===O.STAIRD?'down':v===O.STAIRU?'up':'out',v===O.STAIRD?'Escada para baixo':v===O.STAIRU?'Escada para cima':'Saída'])}}
+ return o}
+const _drawMini0=drawMini;
+drawMini=function(){_drawMini0();const S=mm.width,R=44,k=S/(R*2),mid=S/2,lim=mid-9;
+ const draw=(x,y,kind,edge)=>{let X=(x-P.x+R)*k,Y=(y-P.y+R)*k;const dx=X-mid,dy=Y-mid,d=Math.hypot(dx,dy);
+  if(d>lim){if(!edge)return;X=mid+dx/d*lim;Y=mid+dy/d*lim;mg.save();mg.fillStyle={inv:'#ff4a3a',boss:'#c070ff'}[kind];const a=Math.atan2(dy,dx);mg.translate(X,Y);mg.rotate(a);mg.beginPath();mg.moveTo(8,0);mg.lineTo(-3,-6);mg.lineTo(-3,6);mg.closePath();mg.fill();mg.restore();return}
+  markIcon(mg,X,Y,6.5,kind)};
+ for(const[x,y,kind]of stairTargets())draw(x,y,kind,false);
+ for(const[x,y,kind]of evTargets())draw(x,y,kind,true)};
+const _drawMap0=drawMap;
+drawMap=function(){_drawMap0();const c=$('mapc'),g=c.getContext('2d'),k=c.width/W,r=Math.max(6,Math.min(11,c.width/90));
+ g.save();g.textAlign='center';g.font='700 '+Math.max(10,Math.round(r*1.15))+'px system-ui';g.lineWidth=3;g.strokeStyle='rgba(0,0,0,.85)';g.fillStyle='#fff';
+ const lab=mapZ>=1.5;
+ for(const[x,y,kind,name]of stairTargets()){markIcon(g,x*k,y*k,r,kind);if(lab){g.strokeText(name,x*k,y*k-r-4);g.fillText(name,x*k,y*k-r-4)}}
+ for(const[x,y,kind,name]of evTargets()){markIcon(g,x*k,y*k,r*1.15,kind);g.strokeText(name,x*k,y*k-r-6);g.fillText(name,x*k,y*k-r-6)}
+ g.restore()};
 
 // ===== INTERFACE =====
 const $=id=>document.getElementById(id);
