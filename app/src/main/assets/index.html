@@ -334,7 +334,7 @@ A:{name:'Arqueiro',hp:13,mp:8,hp0:120,mp0:60,range:6,mul:1.05,atkcd:1.5,desc:'At
 M:{name:'Mago',hp:9,mp:22,hp0:90,mp0:120,range:5,mul:1.1,atkcd:1.7,desc:'Magias à distância. Muito mana, pouca vida.'}};
 const expFor=L=>L<=1?0:Math.floor(30*Math.pow(L-1,2.25));
 const BAL={H:(L,b)=>1+Math.max(0,L-60)/280*(b?0:1),D:(L,b)=>b?1:1+Math.max(0,L-100)/1500,G:L=>1+L/60,
- kp:[[1,4],[10,7],[50,13],[100,22],[200,40],[400,55],[700,76],[900,120]],
+ kp:[[1,2],[10,3],[50,5],[100,8],[200,13],[400,18],[700,25],[900,40]],
  K(L){const p=this.kp;if(L<=1)return p[0][1];for(let i=1;i<p.length;i++)if(L<=p[i][0]){const a=p[i-1],b=p[i];return a[1]+(b[1]-a[1])*(L-a[0])/(b[0]-a[0])}return p[p.length-1][1]},
  X(d){const L=Math.max(1,d.lvl),base=6+L*L*.75+L*4,st=expFor(L+1)-expFor(L);return Math.max(1,Math.round(st/this.K(L)*d.exp/base))}};
 
