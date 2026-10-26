@@ -2,7 +2,7 @@ plugins { id 'com.android.application' }
 android {
     namespace 'com.aldora.game'
     compileSdk 34
-    defaultConfig { applicationId "com.aldora.game"; minSdk 24; targetSdk 34; versionCode 30; versionName "3.11" }
+    defaultConfig { applicationId "com.aldora.game"; minSdk 24; targetSdk 34; versionCode 33; versionName "3.13.1" }
     buildTypes { release { signingConfig signingConfigs.debug } }
     lint { abortOnError false; checkReleaseBuilds false }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
