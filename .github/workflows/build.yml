@@ -16,7 +16,7 @@ jobs:
         env:
           KS: ${{ secrets.DEBUG_KEYSTORE_B64 }}
         run: |
-          if [ -n "$KS" ]; then mkdir -p ~/.android && echo "$KS" | base64 -d > ~/.android/debug.keystore && echo "Chave fixa aplicada"; else echo "AVISO: segredo DEBUG_KEYSTORE_B64 ausente, usando chave temporaria (o APK nao atualiza por cima de outro)"; fi
+          if [ -n "$KS" ]; then mkdir -p ~/.android && echo "$KS" | base64 -d > ~/.android/debug.keystore && echo "KS_PATH=$HOME/.android/debug.keystore" >> "$GITHUB_ENV" && echo "Chave fixa aplicada"; else echo "AVISO: segredo DEBUG_KEYSTORE_B64 ausente, usando chave temporaria (o APK nao atualiza por cima de outro)"; fi
       - name: Mostrar impressao digital da chave (SHA1)
         run: keytool -list -v -keystore ~/.android/debug.keystore -storepass android 2>/dev/null | grep -E "Alias|SHA1" || echo "sem chave ainda"
       - name: Compilar
