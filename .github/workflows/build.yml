@@ -24,6 +24,11 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
+      - name: Mostrar assinatura do APK pronto
+        run: |
+          APK="${{ env.DIR }}/app/build/outputs/apk/debug/app-debug.apk"
+          BT="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
+          "$BT/apksigner" verify --print-certs "$APK" | grep -E "Signer #1 certificate (SHA-1|SHA-256)"
       - uses: actions/upload-artifact@v4
         with:
           name: ReinosDeAldora-apk
