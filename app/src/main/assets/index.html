@@ -69,7 +69,7 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 .muted{color:var(--muted);font-size:13px;line-height:1.4}
 .quest{padding:8px 10px;margin-bottom:8px;border:1px solid #3a2e1c;border-radius:8px;background:#14100b}.quest b{font-family:var(--disp);font-size:14px}.quest small{display:block;color:var(--gold);font-size:12px}.quest p{margin:5px 0;font-size:13px;color:#d8ccaa}.quest span{font-size:12px;color:var(--muted)}.quest.ready{border-color:var(--good)}.quest.ready span{color:var(--good)}
 .qb{height:5px;border-radius:3px;background:#000;overflow:hidden;margin:4px 0}.qb i{display:block;height:100%;background:var(--xp)}
-#audbox{position:fixed;right:max(12px,env(safe-area-inset-right,0px));top:max(178px,calc(env(safe-area-inset-top,0px) + 178px));width:min(260px,calc(100vw - 24px));z-index:7}.audb{padding:10px 14px 14px}.audb label{display:flex;justify-content:space-between;font-size:13px;color:var(--parch);margin:8px 0 4px}.audb label span{color:var(--gold)}.audb input[type=range]{width:100%;accent-color:var(--gold);touch-action:none;height:26px}.audb .chk{justify-content:flex-start;gap:8px;margin-top:12px}#dlg{position:fixed;left:50%;bottom:max(84px,calc(env(safe-area-inset-bottom,0px) + 84px));transform:translateX(-50%);width:min(580px,calc(100vw - 24px));max-height:68vh;display:flex;flex-direction:column;z-index:5}
+#audbox{position:fixed;right:max(12px,env(safe-area-inset-right,0px));top:max(178px,calc(env(safe-area-inset-top,0px) + 178px));width:min(260px,calc(100vw - 24px));z-index:7}.audb{padding:10px 14px 14px}.audb label{display:flex;justify-content:space-between;font-size:13px;color:var(--parch);margin:8px 0 4px}.audb label span{color:var(--gold)}.audb input[type=range]{width:100%;accent-color:var(--gold);touch-action:none;height:26px}.audb .chk{justify-content:flex-start;gap:8px;margin-top:12px}#dlg{position:fixed;left:50%;bottom:max(84px,calc(env(safe-area-inset-bottom,0px) + 84px));transform:translateX(-50%);width:min(580px,calc(100vw - 24px));max-height:68vh;display:flex;flex-direction:column;z-index:15}
 .dh{display:flex;gap:12px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--goldd)}
 #dportrait{width:56px;height:56px;border-radius:50%;background:radial-gradient(#4a3c26,#14100a);border:2px solid var(--goldd)}
 .dh div{flex:1;min-width:0}#dname{font-family:var(--disp);font-weight:700;font-size:17px}#dtitle{font-size:13px;color:var(--gold)}
@@ -138,7 +138,7 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 <div id="tgt" class="box" hidden><div id="tname"></div><div id="tinfo"></div><div class="bar"><i id="thp"></i></div></div>
 <div id="zone"></div>
 <div id="tr"><div id="mmw" title="Clique para abrir o mapa-múndi (M)"><canvas id="mm" width="150" height="150"></canvas><div id="clock"></div></div>
-<div id="menu"><button data-p="inv" title="Mochila (I)"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6a4 4 0 0 1 8 0"/><path d="M6 9a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2z"/><path d="M9 14h6v4H9z"/><path d="M6 11h12"/></svg></button><button data-p="quests" title="Missões (Q)"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10a2 2 0 0 1 2 2v12a2 2 0 0 0 2 2H9a2 2 0 0 1-2-2z"/><path d="M7 4a2 2 0 0 0-2 2v2h2"/><path d="M10 9h6M10 13h6"/></svg></button><button data-p="bst" title="Bestiário (B)"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5C6.5 4 9.5 4 12 5.5v14C9.5 18 6.5 18 4 19.5z"/><path d="M20 5.5C17.5 4 14.5 4 12 5.5v14c2.5-1.5 5.5-1.5 8 0z"/><path d="M7 9h2.5M14.5 9H17"/></svg></button><button data-p="spells" title="Magias (K)"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4z"/><path d="M18 15l.8 2 2 .8-2 .8L18 21l-.8-2.4-2-.8 2-.8z"/></svg></button><button id="btnmnt" hidden title="Montar/Desmontar (R)"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20c0-6 2-9 6-11l3-5 2 2-1 3c3 1 4 4 4 7"/><path d="M5 20h5M16 20h3"/><circle cx="15" cy="8" r=".6" fill="currentColor"/></svg></button><button id="btnmore" title="Mais opções"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg></button></div><div id="more" class="box" hidden><button data-p="char" title="Personagem (C)">👤 Perfil</button><button data-p="ach" title="Conquistas e títulos">🏆 Conquistas</button><button data-p="opt" title="Opções">⚙ Opções</button><button id="btnsnd" title="Som">🔊 Som</button><button id="btnexit" title="Salvar o progresso e voltar ao menu">💾 Salvar e sair</button></div></div>
+<div id="menu"><button data-p="inv" title="Mochila (I)"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6a4 4 0 0 1 8 0"/><path d="M6 9a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2z"/><path d="M9 14h6v4H9z"/><path d="M6 11h12"/></svg></button><button data-p="quests" title="Missões (Q)"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10a2 2 0 0 1 2 2v12a2 2 0 0 0 2 2H9a2 2 0 0 1-2-2z"/><path d="M7 4a2 2 0 0 0-2 2v2h2"/><path d="M10 9h6M10 13h6"/></svg></button><button data-p="bst" title="Bestiário (B)"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5C6.5 4 9.5 4 12 5.5v14C9.5 18 6.5 18 4 19.5z"/><path d="M20 5.5C17.5 4 14.5 4 12 5.5v14c2.5-1.5 5.5-1.5 8 0z"/><path d="M7 9h2.5M14.5 9H17"/></svg></button><button data-p="spells" title="Magias (K)"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4z"/><path d="M18 15l.8 2 2 .8-2 .8L18 21l-.8-2.4-2-.8 2-.8z"/></svg></button><button id="btnmnt" hidden title="Montar/Desmontar (R)"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20c0-6 2-9 6-11l3-5 2 2-1 3c3 1 4 4 4 7"/><path d="M5 20h5M16 20h3"/><circle cx="15" cy="8" r=".6" fill="currentColor"/></svg></button><button id="btnmore" title="Mais opções"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg></button></div><div id="more" class="box" hidden><button data-p="char" title="Personagem (C)">👤 Perfil</button><button data-p="lore" title="Diário de Aldora">📜 Diário</button><button data-p="ach" title="Conquistas e títulos">🏆 Conquistas</button><button data-p="opt" title="Opções">⚙ Opções</button><button id="btnsnd" title="Som">🔊 Som</button><button id="btnexit" title="Salvar o progresso e voltar ao menu">💾 Salvar e sair</button></div></div>
 <div id="log"></div>
 <div id="spells" class="box"></div>
 <div id="panel" class="box" hidden><div class="ph"><b id="ptitle"></b><button class="x" id="pclose" aria-label="Fechar">×</button></div><div id="pbody"></div></div>
@@ -153,7 +153,7 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 <div id="start"><div id="sbox" class="box"><h1>Reinos de Aldora</h1><div class="sub">Explore · Lute · Evolua</div>
 <div id="loading"><div class="lb"><div id="lbar"></div></div><div id="ltext">Preparando o mundo…</div></div>
 <div id="menu2" hidden>
-<div id="scr-home" class="scr"><div class="homebtns"><button id="bnew" class="opt go big hb">Criar novo personagem</button><button id="bcont" class="opt big hb">Continuar aventura</button></div><button id="bimp" class="opt ghost">Importar progresso</button> <button id="bbk" class="opt ghost">Backups automáticos</button> <button id="brel" class="opt ghost">↻ Recarregar arquivos do jogo</button><div id="relmsg" class="muted" hidden></div><div id="nosave" class="muted" hidden>Nenhum personagem salvo neste aparelho ainda.</div></div>
+<div id="scr-home" class="scr"><div class="homebtns"><button id="bnew" class="opt go big hb">Criar novo personagem</button><button id="bcont" class="opt big hb">Continuar aventura</button></div><button id="bimp" class="opt ghost">Importar progresso</button> <button id="brel" class="opt ghost">↻ Recarregar arquivos do jogo</button><div id="relmsg" class="muted" hidden></div><div id="nosave" class="muted" hidden>Nenhum personagem salvo neste aparelho ainda.</div></div>
 <div id="scr-new" class="scr" hidden><h2 class="stitle">Novo personagem</h2><label class="flab" for="nick">Nome do herói</label><input id="nick" maxlength="16" placeholder="Digite o nome" autocomplete="off"><div class="flab">Classe</div><div id="vocs"></div><div class="flab">Aparência</div><div id="lookbox" class="lked"></div><div class="row"><button id="newg" class="opt go big">Criar personagem</button><button id="nback" class="opt ghost big">Voltar</button></div></div>
 <div id="scr-load" class="scr" hidden><h2 class="stitle">Escolha seu personagem</h2><div id="chars"></div><div class="row"><button id="lback" class="opt ghost big">Voltar</button></div></div>
 <div class="keys" id="keys"><kbd>WASD</kbd>/setas ou clique para andar · clique no monstro para atacar · <kbd>1</kbd>–<kbd>5</kbd> magias · <kbd>H</kbd>/<kbd>J</kbd> poções<br><kbd>Tab</kbd> alvo · <kbd>I</kbd> mochila · <kbd>Q</kbd> missões · <kbd>M</kbd> mapa · <kbd>+</kbd>/<kbd>-</kbd> zoom</div></div></div></div>
@@ -4167,7 +4167,7 @@ drawMap=function(){_drawMap0();const c=$('mapc'),g=c.getContext('2d'),k=c.width/
  for(const[x,y,kind,name]of evTargets()){markIcon(g,x*k,y*k,r*1.15,kind);g.strokeText(name,x*k,y*k-r-6);g.fillText(name,x*k,y*k-r-6)}
  g.restore()};
 
-// ===== ETAPA 18: bestiário, backup automático e festivais sazonais =====
+// ===== ETAPA 18: bestiário e festivais sazonais =====
 // ---------- bestiário ----------
 function bstD(){achFix();if(!P.cnt.bst)P.cnt.bst={};if(!P.cnt.bstR)P.cnt.bstR={};return P.cnt.bst}
 function bstNeed(d){return d.boss?3:20}
@@ -4200,29 +4200,8 @@ function renderBst(p){bstD();const R=bstRegions();let tot=0,dn=0;R.forEach(r=>r.
    const dr=d.loot.map(l=>e&&e.d[l[0]]?l[0]:'???').join(', ');
    w.children[2].textContent=(k>=10?'Vida: '+fmt(d.hp)+' · ':'Vida: ??? · ')+el2+(k?' · Saque: '+(dr||'—'):'');
    w.querySelector('i').style.width=Math.min(100,k/need*100)+'%';p.appendChild(w)})})}
-// ---------- backup automático ----------
-const BKKEY='aldora_bk';
-function bkList(){try{const a=JSON.parse(localStorage.getItem(BKKEY)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
-function bkSnap(cid,why){try{const code=exportCode(cid);if(!code)return false;const o=JSON.parse(localStorage.getItem(CHARPFX+cid));let a=bkList();
- const last=a.filter(x=>x.cid===cid).sort((x,y)=>y.t-x.t)[0];if(last&&last.ts===o.p.ts&&why==='auto')return true;
- a.push({cid,t:Date.now(),ts:o.p.ts,name:o.p.name,lvl:o.p.lvl,why:why||'auto',code});
- const per={};a=a.sort((x,y)=>y.t-x.t).filter(x=>{per[x.cid]=(per[x.cid]||0)+1;return per[x.cid]<=3}).slice(0,8);
- for(;;){try{localStorage.setItem(BKKEY,JSON.stringify(a));return true}catch(e){if(a.length<=1)return false;a.pop()}}}catch(e){return false}}
-let _bkLast=0;
-function bkAuto(force){if(!P||!P.cid||P.dead)return;const n=Date.now();if(!force&&n-_bkLast<60000)return;_bkLast=n;try{saveGame()}catch(e){}bkSnap(P.cid,'auto')}
-setInterval(()=>bkAuto(false),240000);
-document.addEventListener('visibilitychange',()=>{if(document.hidden)bkAuto(false)});
-window.addEventListener('pagehide',()=>bkAuto(false));
-const _deleteChar0=deleteChar;deleteChar=function(id){bkSnap(id,'antes de excluir');_deleteChar0(id)};
-function openBackups(done){const b=bkOpen('Backups automáticos');
- b.appendChild(el('p','muted','O jogo guarda cópias automáticas do seu personagem neste aparelho (a cada 4 minutos, ao sair e antes de excluir). Restaurar nunca apaga um personagem existente: cria/atualiza uma cópia. Para proteger contra desinstalação, use também “Exportar progresso” no Perfil e guarde o código fora do jogo.'));
- const a=bkList().sort((x,y)=>y.t-x.t);const msg=el('div','msg');
- if(!a.length)b.appendChild(el('p','muted','Nenhum backup ainda. Eles aparecem depois de alguns minutos de jogo.'));
- a.forEach(x=>{const r=el('div','row'),m=el('div','mid');m.innerHTML='<b></b><small></small>';m.firstChild.textContent=x.name+' · nível '+x.lvl;m.lastChild.textContent=new Date(x.t).toLocaleString('pt-BR')+' · '+(x.why==='auto'?'automático':x.why);r.appendChild(m);
-  const bt=el('button','mini go','Restaurar');bt.style.marginLeft='auto';bt.onclick=()=>{try{const p=importCode(x.code);msg.className='msg ok';msg.textContent='Restaurado: '+p.name+' (nível '+p.lvl+'). Veja em “Continuar aventura”.';done&&done()}catch(e){msg.className='msg err';msg.textContent=e.message||'Falha ao restaurar.'}};r.appendChild(bt);b.appendChild(r)});
- b.appendChild(msg);const r=el('div','row');
- if(typeof P!=='undefined'&&P&&P.cid){const c1=el('button','opt go','Fazer backup agora');c1.onclick=()=>{bkAuto(true);openBackups(done)};r.appendChild(c1)}
- const c3=el('button','opt ghost','Fechar');c3.onclick=bkClose;r.appendChild(c3);b.appendChild(r)}
+// limpeza: remove cópias automáticas antigas (recurso retirado)
+try{localStorage.removeItem('aldora_bk')}catch(err){}
 // ---------- festivais sazonais ----------
 const FEST=[
  {id:'abobora',m:[10],n:'Noite das Abóboras',ic:'🎃',boss:'Rei Abóbora',el:'shadow',title:'Folião das Abóboras',mes:'outubro'},
@@ -4293,6 +4272,111 @@ function festBoss(){const f=festNow(),F=festP();
  const pos=evFreeSpot(P.x,P.y,12,22);if(!pos){log('Sem espaço para o chefe aparecer. Afaste-se da cidade e tente de novo.','warn');return}
  const d=festDef(base,f),s={x:pos[0],y:pos[1],l:0,m:d.id,ent:null,t:0,ev:'boss',xm:2,hm:1,dmm:1};
  F.tok-=5;EV.boss={s,d,end:gameTime+DAYLEN};toast(f.ic+' '+f.boss,'apareceu ao '+dirName(pos[0]-P.x,pos[1]-P.y));log(f.boss+' (Nv '+d.lvl+') apareceu ao '+dirName(pos[0]-P.x,pos[1]-P.y)+'! Derrote-o para ganhar 10 fichas e ouro.','quest');closeDlg()}
+
+// ===== ETAPA 19: Diário de Aldora — fragmentos de lore nos locais especiais, capítulos e guardiões =====
+const LCH=[
+ {t:'A Canção da Aurora',ti:'Cronista da Aurora'},{t:'O Pacto dos Anciãos',ti:'Guardião do Pacto'},{t:'A Guerra dos Reinos',ti:'Veterano da Guerra'},
+ {t:'O Despertar da Sombra',ti:'Testemunha da Sombra'},{t:'A Queda das Cidadelas',ti:'Sobrevivente das Cidadelas'},{t:'O Último Selo',ti:'Voz do Último Selo'}];
+// [local@bioma, título, texto] — 58 fragmentos, em ordem de capítulo
+const LORE=[
+['Ruínas de Eldrin@Planícies de Verdália','Pedra de Eldrin','Aqui se ergueu Eldrin, a primeira cidade de Aldora. Uma inscrição diz: “Antes dos reis, antes do aço, havia a Canção. Aldor cantou, e a terra ouviu.”'],
+['Colina do Vigia@Planícies de Verdália','O Primeiro Vigia','Um vigia anotou na pedra: “Toda noite a colina vibra, como se algo respirasse sob o mundo. Os anciões dizem que é o eco da Canção.”'],
+['Santuário das Fadas@Floresta Sussurrante','Bilhete das Fadas','As fadas guardam a memória de Aldor: “Ele nos deu asas e um segredo. A Canção tinha seis versos, e cada verso virou um Selo.”'],
+['Carvalho Ancestral@Floresta Sussurrante','Anéis do Tempo','Contando os anéis do carvalho, um druida leu: “Seis Selos foram plantados ao redor do Coração do Mundo. Enquanto durarem, a Sombra dorme.”'],
+['Altar do Pântano@Pântano Sombrio','Oferenda Afogada','Pescadores deixavam peixe neste altar, sem saber a quem rezavam. “Ela não é má”, escreveu um deles. “Ela só é faminta.”'],
+['Cabana da Bruxa Velha@Pântano Sombrio','Caderno da Bruxa','A velha anotava sonhos: “Toda noite sonho com uma porta sem maçaneta. Do outro lado alguém bate, devagar, com paciência de séculos.”'],
+['Oásis Perdido@Deserto de Khem','Mapa na Areia','Mercadores de Khem desenharam um mapa: seis pontos, em linha torta, do deserto ao centro do mundo. No rodapé: “Os Selos.”'],
+['Estátua do Sol@Deserto de Khem','Hino Solar','Na base da estátua: “Que o Sol vigie o primeiro Selo enquanto o povo dorme.” Alguém riscou “vigie” e escreveu “vigiou”.'],
+['Obelisco dos Ventos@Savana Dourada','Sopro de Aviso','Os ventos sussurram uma contagem regressiva. Os viajantes dizem que o número diminui a cada geração.'],
+['Árvore dos Anciãos@Savana Dourada','Última Página do Primeiro Livro','Aqui termina a era da Aurora: “Aldor partiu para o Coração do Mundo e jamais voltou. Deixou aos mortais o canto e a tarefa de lembrá-lo.”'],
+['Templo Esquecido@Selva Esmeralda','Voto dos Anciãos','Seis anciãos juraram guardar os Selos, um para cada reino. O mais jovem hesitou, e seu nome foi raspado da pedra.'],
+['Cachoeira Sagrada@Selva Esmeralda','Água que Lembra','Quem bebe aqui sonha com a Canção. Um peregrino anotou: “No quinto verso a melodia falha. Falta uma nota.”'],
+['Monólito Congelado@Tundra Gelada','Gelo e Memória','Sob o gelo, entalhes: “O Selo do Norte foi fechado com lágrimas. O ancião que o guardou virou geada, e sorriu.”'],
+['Acampamento Abandonado@Tundra Gelada','Diário do Expedicionário','“Dia 31: seguimos o mapa até o gelo. Dia 33: os cães não avançam. Dia 34: ouvimos cantar sob a neve. Dia 35: fiquei sozinho.”'],
+['Torre do Vigia@Montanhas Rochosas','Aviso nas Montanhas','Vigias acendiam fogueiras ao primeiro sinal de abalo. Um relatório: “Três tremores em uma semana. Aldor, onde estás?”'],
+['Pico do Trovão@Montanhas Rochosas','Trovão Preso','Dizem que o trovão nasceu aqui, quando um dos Selos rangeu. O estrondo ecoa até hoje em dias de tempestade.'],
+['Cratera Ardente@Terras Vulcânicas','O Selo Quente','Entre as brasas, um pergaminho intacto: “O Selo do Fogo não é uma prisão, é uma ferida cicatrizando. Não a toquem.”'],
+['Altar Infernal@Terras Vulcânicas','Preço do Poder','Alguém tentou arrancar força do Selo. Restaram cinzas e um bilhete: “Funcionou por uma noite.”'],
+['Ruínas Carmesim@Campos Carmesim','Reino Vermelho','Aqui reinou a rainha que se recusou ao Pacto. “Por que um selo deveria mandar em mim?”, dizia ela.'],
+['Altar do Poente@Campos Carmesim','Despedida do Ancião','O último ancião deixou um aviso ao pôr do sol: “Se a Canção calar, procurem o Coração. Mas não vão sozinhos.”'],
+['Santuário dos Cristais@Floresta Cristalina','Cristal que Fala','Os cristais guardam vozes: “A rainha carmesim rompeu o Pacto. Os reinos se armam.”'],
+['Lago Espelhado@Floresta Cristalina','Reflexo Errado','No lago, o reflexo de quem olha sorri um instante depois. Um escriba anotou: “Algo já atravessou o Selo.”'],
+['Pirâmide Negra@Deserto de Obsidiana','Rei de Obsidiana','O faraó negro quis ser eterno: “Se a Sombra não morre, por que eu morreria?” Foi enterrado de pé.'],
+['Oásis Sombrio@Deserto de Obsidiana','Água Escura','A água daqui gela ao toque. Soldados mortos voltaram ao acampamento de madrugada, pedindo comida.'],
+['Pináculo do Trovão@Picos Tempestuosos','Cartas do Front','“Querida, a tempestade não para desde que a guerra começou. Dizem que o próprio céu está de luto.”'],
+['Monólito Tempestuoso@Picos Tempestuosos','Juramento Quebrado','Gravado às pressas: “Rompemos o Pacto para vencer a guerra. Que Aldor nos perdoe.”'],
+['Santuário Submerso@Charco Abissal','Sino Sob as Ondas','Um sino toca no fundo do charco. Pescadores dizem que cada badalada é um Selo que enfraquece.'],
+['Farol Naufragado@Charco Abissal','Luz Apagada','O faroleiro escreveu: “Hoje a luz não alcançou o mar. Havia algo mais escuro que a noite lá fora.”'],
+['Pirâmide Solar@Planície das Ruínas','Anel de Ouro','Um faraó dourado fez as pazes com a rainha carmesim. O tratado durou uma estação.'],
+['Oásis Dourado@Planície das Ruínas','Fim da Guerra','A guerra acabou sem vencedores. “Quando olhamos para cima”, escreveu um general, “o terceiro Selo já era pó.”'],
+['Coração do Glaciar@Geleira Eterna','Gelo Quebrado','O gelo rachou de dentro para fora. Entre as frestas, uma voz suave: “Obrigada.”'],
+['Catedral de Gelo@Geleira Eterna','Coro Congelado','Monges cantaram a Canção até congelarem. O último verso termina com a boca aberta.'],
+['Portal do Vazio@Abismo do Vazio','A Porta sem Maçaneta','É a mesma porta dos sonhos da bruxa. Está entreaberta.'],
+['Altar Cósmico@Abismo do Vazio','Estrelas Erradas','As constelações mudaram de lugar. Os astrônomos juram que uma delas olha de volta.'],
+['Cratera Ardente@Vulcão Infernal','Brasa Viva','O Selo do Fogo pulsa como um coração. Alguém escreveu “ainda bate” na rocha e riscou o “ainda”.'],
+['Forja do Titã@Vulcão Infernal','Martelo do Último Ferreiro','O titã forjou armas para a guerra: “O aço comum não fere a Sombra. Só a Canção fere, e a Canção está incompleta.”'],
+['Árvore-Mãe@Selva Primordial','Raiz Profunda','As raízes chegam ao Coração do Mundo e trazem notícias: “Está acordando.”'],
+['Gruta dos Esporos@Selva Primordial','Fungo Obediente','Esporos formam palavras na parede: “ELA CHAMA. ELES OUVEM.”'],
+['Templo dos Ventos@Planícies Celestiais','Prece Interrompida','Os sacerdotes dos ventos rezaram um dia inteiro. No dia seguinte o templo estava vazio e os altares, limpos.'],
+['Escada Celestial@Planícies Celestiais','Degrau Final','Quem sobe vê o mundo de cima: “Seis pontos escurecendo, como feridas num mapa.”'],
+['Fenda Dimensional@Coração do Caos','Rasgo no Mundo','Criaturas de outro lugar atravessam a fenda. Um guarda anotou: “Não são monstros. São refugiados.”'],
+['Trono do Caos@Coração do Caos','O Rei que Ouviu','O rei do caos aceitou a oferta da Sombra: poder em troca de silêncio. “O silêncio é o preço”, disse, e perdeu a voz.'],
+['Mausoléu Real@Necrópole Eterna','Último Rei de Aldora','No sarcófago, uma carta: “Se me desenterrarem, é porque falhamos.”'],
+['Cripta Esquecida@Necrópole Eterna','Os Que Não Descansam','Os mortos daqui não dormem. Sussurram a Canção, sempre com um verso a menos.'],
+['Lago dos Lamentos@Pântano Espectral','Lágrimas do Reino','O lago já foi uma cidade. A água é salgada por motivos que ninguém quer lembrar.'],
+['Farol Fantasma@Pântano Espectral','Sinal ao Mar','O farol acende sozinho para guiar barcos que já afundaram.'],
+['Fornalha Central@Forjas Mecânicas','Engrenagem e Pacto','Engenheiros tentaram construir um novo Selo de metal. A máquina funcionou, mas cantava errado.'],
+['Oficina Abandonada@Forjas Mecânicas','Rascunhos','Plantas de um Selo mecânico, com uma nota: “Falta o verso que só Aldor conhecia.”'],
+['Portão Sombrio@Cidadela Sombria','Aviso no Portão','“Voltem. Não há nada além daqui que possam salvar.” Alguém riscou “salvar” e escreveu “carregar”.'],
+['Salão do Trono@Cidadela Sombria','Cadeira Vazia','O trono está vazio, mas o assento está quente. As tochas se acendem quando ninguém olha.'],
+['Obelisco Estelar@Dunas Cósmicas','Quinto Verso','Entalhado em luz: “O quinto verso fala de perdão, não de força.” Os antigos nunca entenderam isso.'],
+['Cratera Cósmica@Dunas Cósmicas','Queda de uma Estrela','Uma estrela caiu aqui. Dentro dela, um fragmento de melodia tão antigo quanto Aldor.'],
+['Catedral de Vidro@Floresta de Vidro','Vitral do Tecelão','O vitral mostra Aldor deitando-se no Coração do Mundo, sorrindo. Não foi abandono: foi escolha.'],
+['Lago Prismático@Floresta de Vidro','Espelho de Aldor','No lago o reflexo é o de Aldor, e só depois o de quem olha: “Você carrega a minha voz.”'],
+['Observatório Antigo@Campos Estelares','Cálculo Final','O astrônomo mediu: “Resta um Selo. Um só. E ele não é de pedra, nem de fogo, nem de aço.”'],
+['Constelação Viva@Campos Estelares','Estrelas que Escutam','As estrelas formam uma frase no céu: “O ÚLTIMO SELO É QUEM CANTA.”'],
+['Coração do Mundo@Núcleo do Mundo','A Porta Aberta','No centro de tudo há uma porta sem maçaneta e, do outro lado, alguém espera. Não bate: espera.'],
+['Altar do Infinito@Núcleo do Mundo','Verso Final','“A Sombra nunca foi inimiga: era o silêncio que Aldor deixou entre as notas. O sexto verso é o seu nome.”']];
+const LCHR=[[0,10],[10,20],[20,30],[30,40],[40,50],[50,58]];
+const LKEY=(p)=>p.name+'@'+(BNAME[p.biome]||'');
+function loreD(){achFix();if(!P.cnt.lore)P.cnt.lore={f:{},c:{},g:{},t:{}};return P.cnt.lore}
+function loreCh(i){return LCHR.findIndex(r=>i>=r[0]&&i<r[1])}
+function loreFound(i){const L=loreD();return !!L.f[LORE[i][0]]}
+function loreCount(ch){const r=LCHR[ch];let n=0;for(let i=r[0];i<r[1];i++)if(loreFound(i))n++;return n}
+function lorePoi(key){return world.pois.find(p=>LKEY(p)===key)}
+function loreUnlock(i,quiet){const L=loreD(),k=LORE[i][0];if(L.f[k])return;L.f[k]=1;const ch=loreCh(i);
+ if(!quiet){toast('Fragmento do Diário',LORE[i][1]);log('📜 Diário de Aldora: “'+LORE[i][1]+'” ('+loreCount(ch)+'/'+(LCHR[ch][1]-LCHR[ch][0])+' do capítulo '+(ch+1)+').','quest');sfx('lvl')}
+ if(loreCount(ch)===LCHR[ch][1]-LCHR[ch][0]&&!L.c[ch])loreComplete(ch,quiet)}
+function loreComplete(ch,quiet){const L=loreD();L.c[ch]=1;const g=2000*(ch+1)*(ch+1);P.gold+=g;const xp=Math.round((expFor(P.lvl+1)-expFor(P.lvl))*.3);gainExp(xp);L.t[ch]=LCH[ch].ti;
+ toast('Capítulo concluído!',LCH[ch].t);log('📖 Capítulo '+(ch+1)+' — “'+LCH[ch].t+'” completo! Recompensa: '+fmt(g)+' de ouro, '+fmt(xp)+' xp e o título “'+LCH[ch].ti+'”. Um Guardião despertou perto de '+LORE[LCHR[ch][1]-1][0].split('@')[0]+' (veja o mapa).','quest');
+ if(Object.keys(L.c).length>=LCH.length&&!L.t.all){L.t.all='Herdeiro de Aldor';P.gold+=100000;log('🏆 Diário completo! Você descobriu o que Aldor escondeu. Título “Herdeiro de Aldor” e 100.000 de ouro.','quest')}}
+function loreGuardS(ch){const L=loreD();if(!L.c[ch]||L.g[ch])return null;LORE_S=window._lgs||(window._lgs={});const key=world.pois.length+'_'+ch;
+ if(LORE_S[key]&&LORE_S[key].w===world)return LORE_S[key].s;const poi=lorePoi(LORE[LCHR[ch][1]-1][0]);if(!poi)return null;const[x,y]=freeNear(0,poi.x+2,poi.y+2,true);
+ const d=loreGuardDef(ch),s={x,y,l:0,m:d.id,ent:null,t:0,ev:'lore',lore:ch,xm:2,hm:1,dmm:1};LORE_S[key]={w:world,s};return s}
+let LORE_S=null;
+function loreGuardDef(ch){const id='lg_'+ch;if(MON[id])return MON[id];const bs=Object.values(MON).filter(d=>d.boss&&d.hp>0&&!d.fest&&!d.lore).sort((a,b)=>a.lvl-b.lvl);const base=bs[Math.min(bs.length-1,Math.round(ch/5*(bs.length-1)))];
+ MON[id]=Object.assign({},base,{id,name:'Guardião — '+LCH[ch].t,hp:Math.round(base.hp*1.2),lore:ch});if(typeof BOSSK!=='undefined'&&BOSSK[base.id])BOSSK[id]=BOSSK[base.id];return MON[id]}
+let _loreT=0,_loreP=null;
+const _evTick1=evTick;evTick=function(dt){_evTick1(dt);loreTick(dt)};
+function loreTick(dt){if(!P||P.dead)return;_loreT-=dt;if(_loreT>0)return;_loreT=.5;const L=loreD();
+ if(_loreP!==P){_loreP=P;LORE.forEach((e,i)=>{const p=lorePoi(e[0]);if(p&&p.found)loreUnlock(i,true)})}
+ if(P.layer===0)LORE.forEach((e,i)=>{if(L.f[e[0]])return;const p=lorePoi(e[0]);if(p&&dist(p.x,p.y,P.x,P.y)<5)loreUnlock(i)});
+ for(let ch=0;ch<LCH.length;ch++){const s=loreGuardS(ch);if(!s)continue;const far=cheb(s.x,s.y,P.x,P.y);
+  if(!s.ent&&P.layer===0&&far<=34)spawnMon(s);else if(s.ent&&(far>60||P.layer!==0)){despawn(s.ent)}}}
+const _evKill1=evKill;evKill=function(m){const ch=m.spawn&&m.spawn.lore;_evKill1(m);if(ch===undefined||!P)return;const L=loreD();L.g[ch]=1;const d=m.def,got=[];
+ const g=Math.round(d.gold*BAL.G(d.lvl)*15);P.gold+=g;dropEquip(d,got);toast('Guardião derrotado!',LCH[ch].t);log('Guardião de “'+LCH[ch].t+'” derrotado! +'+fmt(g)+' de ouro'+(got.length?', '+got.join(', '):'')+'.','quest');refreshUI()};
+const _evTargets1=evTargets;evTargets=function(){const o=_evTargets1();if(!P||P.layer!==0)return o;const L=loreD();for(let ch=0;ch<LCH.length;ch++){if(!L.c[ch]||L.g[ch])continue;const s=loreGuardS(ch);if(!s)continue;const e=s.ent;o.push([e?e.x:s.x,e?e.y:s.y,'boss','Guardião: '+LCH[ch].t])}return o};
+let loreOpen=-1;
+function renderLore(p){const L=loreD();let tot=0;LORE.forEach((e,i)=>{if(loreFound(i))tot++});
+ p.appendChild(el('p','muted','Fragmentos encontrados: <b>'+tot+' / '+LORE.length+'</b> · Descubra locais especiais pelo mundo para ler a história de Aldora. Cada capítulo completo dá ouro, XP, um título e desperta um Guardião marcado no mapa.'));
+ if(L.t.all){const t=el('button','mini',P.title===L.t.all?'Título em uso':'Usar título “'+L.t.all+'”');t.onclick=()=>{P.title=L.t.all;refreshUI()};p.appendChild(t)}
+ LCH.forEach((c,ch)=>{const r=LCHR[ch],n=loreCount(ch),all=n===r[1]-r[0];
+  const h=el('button','opt'+(all?' go':''),(loreOpen===ch?'▾ ':'▸ ')+'Capítulo '+(ch+1)+' — '+c.t+' — '+n+' / '+(r[1]-r[0])+(all?' ✔':''));h.style.cssText='width:100%;margin:3px 0;text-align:left';h.onclick=()=>{loreOpen=loreOpen===ch?-1:ch;renderPanel()};p.appendChild(h);
+  if(loreOpen!==ch)return;
+  if(L.c[ch]){const t=el('button','mini',P.title===c.ti?'Título em uso':'Usar título “'+c.ti+'”');t.onclick=()=>{P.title=c.ti;refreshUI()};p.appendChild(t);
+   const d=loreGuardDef(ch);p.appendChild(el('p','muted',L.g[ch]?'Guardião derrotado ✔':'Guardião desperto (Nv '+d.lvl+') — marcado no mapa.'))}
+  for(let i=r[0];i<r[1];i++){const e=LORE[i],ok=loreFound(i),w=el('div','quest'+(ok?' ready':''));w.innerHTML='<b></b><small></small><p></p>';
+   w.children[0].textContent=ok?'📜 '+e[1]:'??? — fragmento não encontrado';w.children[1].textContent=ok?e[0].split('@')[0]+' · '+e[0].split('@')[1]:'Procure um local especial em: '+e[0].split('@')[1];w.children[2].textContent=ok?e[2]:'';p.appendChild(w)}})}
 
 // ===== INTERFACE =====
 const $=id=>document.getElementById(id);
@@ -4377,7 +4461,7 @@ function togglePanel(t){panelTab=(t&&panelTab===t)?null:t;$('panel').hidden=!pan
 function refreshUI(){if(!P)return;if(panelTab)renderPanel();refreshBar();if(curNpc&&!$('dlg').hidden)dlgRefresh&&dlgRefresh()}
 function itemStats(it){if(it.type==='equip'){const v=it.voc?' · '+VOCS[it.voc].name:'';return(it.atk?'Ataque '+it.atk:'Defesa '+it.def)+' · Nv '+it.lvl+v+(it.rar?' · '+RAR[it.rar].n:'')}if(it.type==='potion')return 'Restaura '+it.val+(it.kind==='hp'?' de vida':' de mana');return 'Valor '+fmt(it.price)+' · material'}
 function itemRow(it,right){const r=el('div','row');const im=el('img');im.src=iconURL(it);im.alt='';r.appendChild(im);const m=el('div','mid');m.innerHTML='<b></b><small></small>';m.firstChild.textContent=itemName(it);if(it.rar)m.firstChild.style.color=RAR[it.rar].c;m.lastChild.textContent=itemStats(it);r.appendChild(m);if(right)r.appendChild(right);return r}
-function renderPanel(){const p=$('pbody');p.innerHTML='';$('ptitle').textContent={inv:'Mochila e equipamento',quests:'Diário de missões',spells:'Magias',char:'Personagem',ach:'Conquistas e títulos',bst:'Bestiário',opt:'Opções'}[panelTab];
+function renderPanel(){const p=$('pbody');p.innerHTML='';$('ptitle').textContent={inv:'Mochila e equipamento',quests:'Diário de missões',spells:'Magias',char:'Personagem',ach:'Conquistas e títulos',bst:'Bestiário',lore:'Diário de Aldora',opt:'Opções'}[panelTab];
  if(panelTab==='inv'){
   const eq=el('div','eqg');[['helmet','Elmo'],['weapon','Arma'],['armor','Peitoral'],['shield','Escudo'],['boots','Botas']].forEach(([s,n])=>{const d=el('button','eqs '+s);const id=P.eq[s];if(id){const it=ITEMS[id];if(it.rar)d.classList.add('r'+it.rar);d.innerHTML='<img alt="">';d.firstChild.src=iconURL(it);d.title=it.name+' — '+itemStats(it);if(selItem&&selItem.from==='eq'&&selItem.slot===s)d.classList.add('sel');d.onclick=()=>{selItem={from:'eq',slot:s,id};renderPanel()}}else d.innerHTML='<span>'+n+'</span>';eq.appendChild(d)});p.appendChild(eq);
   const st=el('div','stats');st.innerHTML='<span>Defesa <b>'+totalDef()+'</b></span><span>Ataque <b>'+Math.round((P.eq.weapon?ITEMS[P.eq.weapon].atk:3)*(1+P.lvl*.04)*VOCS[P.voc].mul+P.lvl*.8)+'</b></span><span>Ouro <b>'+fmt(P.gold)+'</b></span>';p.appendChild(st);
@@ -4393,6 +4477,7 @@ function renderPanel(){const p=$('pbody');p.innerHTML='';$('ptitle').textContent
  else if(panelTab==='spells'){SPELLS.slice().sort((a,b)=>barPos(a.k)-barPos(b.k)).forEach(s=>{const r=el('div','row'+(P.lvl<s.lvl?' dim':''));const im=el('img');im.src=spellIcon(s);r.appendChild(im);const m=el('div','mid');m.innerHTML='<b></b><small></small>';m.firstChild.textContent='['+KLAB(barPos(s.k))+'] '+spellName(s);m.lastChild.textContent=(s.el?'['+ELEMS[s.el].n+'] ':'')+s.desc+' Nv '+s.lvl+' · '+spellCost(s)+' mana · recarga '+s.cd+'s';r.appendChild(m);const mv=el('div','mv');[['◀',-1],['▶',1]].forEach(([t,d])=>{const b=el('button','mini',t);b.title='Mover na barra';b.onclick=ev=>{ev.stopPropagation();barMove(s.k,d)};mv.appendChild(b)});r.appendChild(mv);r.onclick=()=>castSpell(s.k);p.appendChild(r)})}
  else if(panelTab==='ach')renderAch(p);
  else if(panelTab==='bst')renderBst(p);
+ else if(panelTab==='lore')renderLore(p);
  else if(panelTab==='opt')renderOpts(p);
  else if(panelTab==='char'){const v=VOCS[P.voc],nx=expFor(P.lvl+1);p.innerHTML='<div class="stats col"><span>Nome <b>'+P.name+'</b></span><span>Vocação <b>'+v.name+'</b></span><span>Nível <b>'+P.lvl+'</b></span><span>Experiência <b>'+fmt(P.exp)+' / '+fmt(nx)+'</b></span><span>Vida <b>'+P.maxhp+'</b></span><span>Mana <b>'+P.maxmp+'</b></span><span>Defesa <b>'+totalDef()+'</b></span><span>Especialização <b>'+(P.spec?SPEC[P.spec].name:'—')+'</b></span><span>Monstros abatidos <b>'+fmt(P.kills)+'</b></span><span>Cidades descobertas <b>'+Object.keys(P.cities).length+' / '+world.cities.length+'</b></span><span>Locais descobertos <b>'+Object.keys(P.pois).length+' / '+world.pois.length+'</b></span><span>Lar <b>'+world.cities.find(c=>c.id===P.home).name+'</b></span></div><p class="muted">'+v.desc+'</p>';const bl=el('button','opt','🎨 Mudar aparência');bl.onclick=openLookEditor;p.appendChild(bl);const be=el('button','opt','💾 Exportar progresso');be.onclick=()=>{saveGame();openExport(P.cid,P.name)};p.appendChild(be)}}
 document.querySelectorAll('#menu button[data-p],#more button[data-p]').forEach(b=>b.onclick=()=>{$('more').hidden=true;togglePanel(b.dataset.p)});$('btnmore').onclick=e=>{e.stopPropagation();$('more').hidden=!$('more').hidden};document.addEventListener('pointerdown',e=>{if(panelTab&&!e.target.closest('#panel,#menu,#more,#bkmodal,#mapwin,#dlg,#audbox,#death,#start'))togglePanel(null)});document.addEventListener('pointerdown',e=>{if(!$('more').hidden&&!e.target.closest('#more,#btnmore'))$('more').hidden=true});
@@ -4613,7 +4698,7 @@ $('bcont').onclick=()=>{if(listChars().length)showScr('load')};
 $('nback').onclick=()=>showScr('home');
 $('lback').onclick=()=>showScr('home');
 $('btnuntarget').onclick=dropTarget;
-$('bimp').onclick=()=>openImport(()=>{showMenu();});$('bbk').onclick=()=>openBackups(()=>{showMenu()});
+$('bimp').onclick=()=>openImport(()=>{showMenu();});
 $('nick').addEventListener('keydown',ev=>{if(ev.key==='Enter')$('newg').click()});
 $('btnmnt').onclick=toggleMount;
 $('newg').onclick=()=>{const n=($('nick').value||'').trim().slice(0,16)||'Aventureiro';const d=newPlayerData(n,selVoc,selLook);d.cid=newCid();$('nick').value='';begin(d,null)};
