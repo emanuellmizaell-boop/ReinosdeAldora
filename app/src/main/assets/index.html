@@ -4678,6 +4678,38 @@ function diveDraw(){const bx=dvEl(),c=bx.c,g=c.getContext('2d'),V=DV;if(!V)retur
  if(V.phase==='end'&&V.res){const R=V.res;g.fillStyle='rgba(0,10,25,.88)';g.fillRect(0,0,W2,H2);g.fillStyle='#ffe9a8';g.textAlign='center';g.font='700 28px Georgia,serif';g.fillText(R.T,W2/2,H2/2-80);g.fillStyle='#d8f0ff';g.font='18px system-ui';g.fillText('Baús abertos: '+R.chests+(R.lost?' · metade do saque perdida':''),W2/2,H2/2-40);g.fillText('+'+fmt(R.gold)+' de ouro'+(R.xp?'   +'+fmt(R.xp)+' xp':''),W2/2,H2/2-8);
   const lines=[];let cur='';for(const w of (R.got.join(', ')||'Nenhum tesouro trazido.').split(' ')){if((cur+' '+w).length>60){lines.push(cur);cur=w}else cur+=(cur?' ':'')+w}lines.push(cur);lines.slice(0,5).forEach((l,i)=>g.fillText(l,W2/2,H2/2+28+i*24))}}
 
+// ===== ETAPA 23: fases da lua (ciclo de 8 dias de jogo), lobisomens na lua cheia e sombras na lua nova =====
+const LUA=[['Lua Nova','🌑'],['Lua Crescente','🌒'],['Quarto Crescente','🌓'],['Lua Gibosa','🌔'],['Lua Cheia','🌕'],['Lua Gibosa','🌖'],['Quarto Minguante','🌗'],['Lua Minguante','🌘']];
+const LUAD=['Magia de sombra +30%, sagrada −15%; criaturas de sombra mais fortes.','','','','Magia sagrada +15%. Lobisomens uivam na noite!','','',''];
+function moonP(){return((Math.floor(gameTime/DAYLEN+DAYSTART+.5)%8)+8)%8}
+function moonDay(){return Math.floor(gameTime/DAYLEN+DAYSTART+.5)}
+function moonIcon(){return LUA[moonP()][1]}
+const LWI=[addItem({name:'Pelo Lunar',type:'loot',price:150,icon:'pelt',color:hex2('#c8d8ff')}).id,addItem({name:'Presa Lunar',type:'loot',price:1500,icon:'fang',color:hex2('#f4f8ff')}).id];
+const _wxDesc0=wxDesc;wxDesc=function(){const p=moonP(),w=_wxDesc0();return LUA[p][1]+' '+LUA[p][0]+(LUAD[p]?': '+LUAD[p]:'')+(w?' · '+w:'')};
+function moonOn(){return !!P&&P.layer===0&&nightF()>.3}
+const _wxEl1=wxEl;wxEl=function(el){let m=_wxEl1(el);if(el&&moonOn()){const p=moonP();if(p===4&&el==='holy')m*=1.15;if(p===0){if(el==='shadow')m*=1.3;else if(el==='holy')m*=.85}}return m};
+const _nightMul1=nightMul;nightMul=function(src){return _nightMul1(src)*(moonP()===0&&src.def&&src.def.el==='shadow'?1.1:1)};
+function lwBase(){const c=Object.values(MON).filter(d=>d.kind==='beast'&&!d.boss&&!d.lw&&/wolf|hound/.test(d.id)&&d.hp>0).sort((a,b)=>a.lvl-b.lvl);if(!c.length)return null;let b=c[0];for(const d of c)if(d.lvl<=P.lvl+5)b=d;return b}
+function lwDef(base,alpha){const id=(alpha?'lwa_':'lw_')+base.id;if(MON[id])return MON[id];
+ const lt=base.loot.concat([['Pelo Lunar',150,alpha?1:.55,'pelt','#c8d8ff'],['Presa Lunar',1500,alpha?1:.05,'fang','#f4f8ff']]);
+ MON[id]=Object.assign({},base,{id,name:alpha?'Alfa Lobisomem':'Lobisomem',el:'shadow',hp:Math.round(base.hp*(alpha?3.2:1.35)),dmg:Math.round(base.dmg*(alpha?1.3:1.15)),speed:base.speed*.85,size:(base.size||1)*(alpha?1.5:1.15),loot:lt,lw:alpha?2:1,
+  look:Object.assign({},base.look,{c:alpha?'#5a2a3a':'#3a3848',c2:alpha?'#b8788a':'#9a98b8',eyes:'#ffe060'})});return MON[id]}
+const LW={t:6,ann:-1,calm:-1};
+const _evTick3=evTick;evTick=function(dt){_evTick3(dt);lunarTick(dt)};
+let _lunChk=0;
+function lunarTick(dt){if(!P||P.dead)return;_lunChk-=dt;if(_lunChk>0)return;const step=1-_lunChk;_lunChk=1;const p=moonP(),md=moonDay(),nf=nightF();
+ if(nf>.35&&LW.ann!==md&&(p===4||p===0)){LW.ann=md;if(p===4){toast('🌕 Lua Cheia','Lobisomens uivam na noite…');log('🌕 Lua Cheia: lobisomens caçam nas terras selvagens esta noite. Magia sagrada +15%.','quest')}else{toast('🌑 Lua Nova','A escuridão fortalece as sombras');log('🌑 Lua Nova: magia de sombra +30%, sagrada −15% esta noite.','quest')}LW.t=Math.min(LW.t,8)}
+ if(nf<.15){for(const m of monsters.slice())if(m.def&&m.def.lw)despawn(m);return}
+ if(p!==4||P.layer!==0||(typeof inHome==='function'&&inHome()))return;
+ LW.t-=step;if(LW.t>0)return;LW.t=rr(60,110);const alive=monsters.filter(m=>m.def&&m.def.lw).length;if(alive>=8)return;
+ const base=lwBase();if(!base)return;const pos=evFreeSpot(P.x,P.y,12,24);if(!pos){LW.t=15;return}
+ const n=ri(2,4),alpha=Math.random()<.2&&!monsters.some(m=>m.def&&m.def.lw===2);let made=0;
+ for(let i=0;i<n;i++){const[x,y]=freeNear(0,pos[0]+ri(-2,2),pos[1]+ri(-2,2),true);if(!inb(x,y)||world.safe[y*W+x])continue;const al=alpha&&i===0;const s={x,y,l:0,m:lwDef(base,al).id,ent:null,t:0,ev:'lw',xm:al?3:1.5,hm:1,dmm:1};spawnMon(s);if(s.ent){s.ent.chase=true;made++}}
+ if(made){log('Uivos ao longe… uma matilha de lobisomens se aproxima ao '+dirName(pos[0]-P.x,pos[1]-P.y)+'!','warn')}}
+const _evKill2=evKill;evKill=function(m){const lw=m.def&&m.def.lw;_evKill2(m);if(lw&&P){achFix();P.cnt.lw=(P.cnt.lw||0)+1;if(lw===2){toast('Alfa abatido!','Você derrotou o Alfa Lobisomem');log('Você derrotou o Alfa Lobisomem!','quest');dropEquip({lvl:Math.max(3,m.def.lvl),boss:true},[])}}};
+A('lobis30','Caçador da Lua','Derrote 30 lobisomens.',()=>(P.cnt&&P.cnt.lw)||0,30,'Caçador da Lua',20000);
+A('lobis200','Flagelo Lunar','Derrote 200 lobisomens.',()=>(P.cnt&&P.cnt.lw)||0,200,'Flagelo Lunar',400000);
+
 // ===== INTERFACE =====
 const $=id=>document.getElementById(id);
 const el=(tag,cls,html)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(html!==undefined)e.innerHTML=html;return e};
@@ -4709,7 +4741,7 @@ function updateHUD(){
  $('hpf').style.width=(P.hp/P.maxhp*100)+'%';$('mpf').style.width=(P.mp/P.maxmp*100)+'%';
  const a=expFor(P.lvl),b=expFor(P.lvl+1);$('xpf').style.width=clamp((P.exp-a)/(b-a),0,1)*100+'%';
  $('hpt').textContent=Math.ceil(P.hp)+' / '+P.maxhp;$('mpt').textContent=Math.ceil(P.mp)+' / '+P.maxmp;$('gold').textContent=fmt(P.gold);
- const h=Math.floor(todHours()),m=Math.floor((todHours()%1)*60);$('clock').textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+(nightAmt()>.25?' ☾':' ☀')+(wxIcon()?' '+wxIcon():'');$('clock').title=wxDesc();
+ const h=Math.floor(todHours()),m=Math.floor((todHours()%1)*60);$('clock').textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+(nightAmt()>.25?' '+(typeof moonIcon==='function'?moonIcon():'☾'):' ☀')+(wxIcon()?' '+wxIcon():'');$('clock').title=wxDesc();
  SPELLS.forEach(s=>{const d=$('sp'+s.k);const cd=P.spCd[s.k]||0;d.querySelector('.cd').style.height=(cd>0?cd/s.cd*100:0)+'%'});
  $('tgt').hidden=!(P.target&&P.target.hp>0);if(P.target&&P.target.hp>0){$('tname').textContent=P.target.def.name+' (Nv '+P.target.def.lvl+')';{const el=P.target.def.el,t=$('tinfo');t.innerHTML=(P.target.def.boss?'<b style="color:#ffb070">Chefe · Fase '+((P.target.ph||0)+1)+'/4</b> · ':'')+(el?'<i style="background:'+ELEMS[el].c+'"></i>'+ELEMS[el].n+' · fraco: '+ELEMS[EL_COUNTER[el]].n+' · resiste: '+ELEMS[el].n:'Sem elemento');}$('thp').style.width=P.target.hp/P.target.maxhp*100+'%'}
  refreshBar();stBar();drawMini();if(mapOpen&&(mapZ===1||performance.now()-mapLast>700)){mapLast=performance.now();drawMap()}
