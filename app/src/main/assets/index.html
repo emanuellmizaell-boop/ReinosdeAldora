@@ -1877,9 +1877,10 @@ function defLook(v){return{skin:'#f0c8a0',hs:v==='M'?'long':v==='A'?'pony':'shor
  cloth:v==='M'?'#4a5aa8':v==='A'?'#4a7a48':'#8a5a3a',accent:v==='M'?'#3a4a9a':v==='A'?'#e04030':'#c03a3a',pants:v==='M'?'#2a2a5a':v==='A'?'#3a2a1a':'#3a2c22',cover:1}}
 function lookOf(P){return Object.assign(defLook(P.voc),P.look||{})}
 function mixHex(a,b,t){const pa=hex2(a),pb=hex2(b);return'rgb('+pa.map((x,i)=>Math.round(x+(pb[i]-x)*t)).join(',')+')'}
-function playerSprite(P,ride){const eq=P.eq,t=k=>eq[k]?ITEMS[eq[k]].tier:-1;const LK=lookOf(P);
- const key=(ride?'prd_':'pl_')+P.voc+'_'+t('weapon')+t('armor')+t('helmet')+t('shield')+t('boots')+'_'+[LK.skin,LK.hs,LK.hair,LK.eyes,LK.beard,LK.cloth,LK.accent,LK.pants,LK.cover].join('');
- return spr(key,()=>mk(128,ride?150:128,g=>{const a=t('armor'),hm=t('helmet'),w=eq.weapon?ITEMS[eq.weapon]:null,v=P.voc;
+function playerSprite(P,ride){try{return playerSprite0(P,ride,0)}catch(e){if(!window._plErr){window._plErr=1;try{log('[aviso] Visual do personagem usou versão simples: '+e.message,'warn')}catch(_){}}try{return playerSprite0(P,ride,1)}catch(e2){return mk(128,128,()=>{})}}}
+function playerSprite0(P,ride,safe){const eq=safe?{}:(P.eq||{}),t=k=>{const it=eq[k]?ITEMS[eq[k]]:null;return it&&it.tier>=0&&TCOL[it.tier]?it.tier:-1};const LK=safe?defLook(P.voc):lookOf(P);
+ const key=(safe?'sf_':'')+(ride?'prd_':'pl_')+P.voc+'_'+t('weapon')+t('armor')+t('helmet')+t('shield')+t('boots')+'_'+[LK.skin,LK.hs,LK.hair,LK.eyes,LK.beard,LK.cloth,LK.accent,LK.pants,LK.cover].join('');
+ return spr(key,()=>mk(128,ride?150:128,g=>{const a=t('armor'),hm=t('helmet'),w=eq.weapon&&ITEMS[eq.weapon]?ITEMS[eq.weapon]:null,v=P.voc;
   const cl={skin:LK.skin,hair:LK.hs==='bald'?null:LK.hair,hairStyle:LK.hs==='bald'?null:LK.hs,eyeCol:LK.eyes,
    cloth:a>=0?mixHex(TCOL[a],LK.cloth,.3):LK.cloth,cloth2:LK.pants,
    head:hm>=0?'helm':(LK.cover?(v==='M'?'hat':v==='A'?'hood':null):null),
