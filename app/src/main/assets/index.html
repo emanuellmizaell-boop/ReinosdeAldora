@@ -1877,9 +1877,9 @@ function defLook(v){return{skin:'#f0c8a0',hs:v==='M'?'long':v==='A'?'pony':'shor
  cloth:v==='M'?'#4a5aa8':v==='A'?'#4a7a48':'#8a5a3a',accent:v==='M'?'#3a4a9a':v==='A'?'#e04030':'#c03a3a',pants:v==='M'?'#2a2a5a':v==='A'?'#3a2a1a':'#3a2c22',cover:1}}
 function lookOf(P){return Object.assign(defLook(P.voc),P.look||{})}
 function mixHex(a,b,t){const pa=hex2(a),pb=hex2(b);return'rgb('+pa.map((x,i)=>Math.round(x+(pb[i]-x)*t)).join(',')+')'}
-function playerSprite(P){const eq=P.eq,t=k=>eq[k]?ITEMS[eq[k]].tier:-1;const LK=lookOf(P);
- const key='pl_'+P.voc+'_'+t('weapon')+t('armor')+t('helmet')+t('shield')+t('boots')+'_'+[LK.skin,LK.hs,LK.hair,LK.eyes,LK.beard,LK.cloth,LK.accent,LK.pants,LK.cover].join('');
- return spr(key,()=>mk(128,128,g=>{const a=t('armor'),hm=t('helmet'),w=eq.weapon?ITEMS[eq.weapon]:null,v=P.voc;
+function playerSprite(P,ride){const eq=P.eq,t=k=>eq[k]?ITEMS[eq[k]].tier:-1;const LK=lookOf(P);
+ const key=(ride?'prd_':'pl_')+P.voc+'_'+t('weapon')+t('armor')+t('helmet')+t('shield')+t('boots')+'_'+[LK.skin,LK.hs,LK.hair,LK.eyes,LK.beard,LK.cloth,LK.accent,LK.pants,LK.cover].join('');
+ return spr(key,()=>mk(128,ride?150:128,g=>{const a=t('armor'),hm=t('helmet'),w=eq.weapon?ITEMS[eq.weapon]:null,v=P.voc;
   const cl={skin:LK.skin,hair:LK.hs==='bald'?null:LK.hair,hairStyle:LK.hs==='bald'?null:LK.hs,eyeCol:LK.eyes,
    cloth:a>=0?mixHex(TCOL[a],LK.cloth,.3):LK.cloth,cloth2:LK.pants,
    head:hm>=0?'helm':(LK.cover?(v==='M'?'hat':v==='A'?'hood':null):null),
@@ -1891,7 +1891,7 @@ function playerSprite(P){const eq=P.eq,t=k=>eq[k]?ITEMS[eq[k]].tier:-1;const LK=
   if(a>=2)cl.emblem=css(TIERACC[a]);if(a>=3&&v!=='M')cl.pauldron=shade(TCOL[a],.1);
   if(hm>=0){cl.helmCol=TCOL[hm];cl.helmHorns=hm===3||hm===7||hm===8;cl.plume=v==='K'?'#c03030':null}
   if(t('boots')>=0)cl.boots=css(shade(TCOL[t('boots')],-.2));
-  drawHero(g,{v,skin:LK.skin,hair:LK.hs==='bald'?null:LK.hair,hs:LK.hs,eyes:LK.eyes,beard:LK.beard,cloth:cl.cloth.startsWith('rgb')?hexOf(cl.cloth):cl.cloth,accent:LK.accent,pants:LK.pants,cover:LK.cover,a,hm,st:t('shield'),bt:t('boots'),wp:cl.weapon==='bow'?'bow':cl.weapon==='staff'?'staff':cl.weapon==='sword'?'sword':'none',wt:t('weapon')},64,118,1)}))}
+  drawHero(g,{ride:!!ride,v,skin:LK.skin,hair:LK.hs==='bald'?null:LK.hair,hs:LK.hs,eyes:LK.eyes,beard:LK.beard,cloth:cl.cloth.startsWith('rgb')?hexOf(cl.cloth):cl.cloth,accent:LK.accent,pants:LK.pants,cover:LK.cover,a,hm,st:t('shield'),bt:t('boots'),wp:cl.weapon==='bow'?'bow':cl.weapon==='staff'?'staff':cl.weapon==='sword'?'sword':'none',wt:t('weapon')},64,ride?100+47*(v==='M'?.84:.92):118,1)}))}
 function hexOf(c){const m=String(c).match(/\d+/g);return m?'#'+m.slice(0,3).map(x=>('0'+(+x).toString(16)).slice(-2)).join(''):c}
 function spellIcon(sp){return spr('sp_'+sp.id,()=>mk(48,48,g=>{const col=sp.col;g.lineCap='round';
  blob(g,24,24,22,'rgba(255,255,255,.12)','rgba(0,0,0,.35)');
@@ -2525,9 +2525,7 @@ function plCl(P){const eq=P.eq,t=k=>eq[k]?ITEMS[eq[k]].tier:-1;const LK=lookOf(P
  if(hm>=0){cl.helmCol=TCOL[hm];cl.helmHorns=hm===3||hm===7||hm===8;cl.plume=v==='K'?'#c03030':null}
  if(t('boots')>=0)cl.boots=css(shade(TCOL[t('boots')],-.2));
  return cl}
-function riderSprite(P){const eq=P.eq,t=k=>eq[k]?ITEMS[eq[k]].tier:-1,LK=lookOf(P);
- const key='rd_'+P.voc+'_'+t('weapon')+t('armor')+t('helmet')+t('shield')+t('boots')+'_'+[LK.skin,LK.hs,LK.hair,LK.eyes,LK.beard,LK.cloth,LK.accent,LK.pants,LK.cover].join('');
- return spr(key,()=>mk(128,128,g=>drawRider(g,plCl(P),64,96)))}
+function riderSprite(P){return playerSprite(P,1)}
 // origem (0,0) = ponto do assento; x+ = frente do personagem
 function drawRider(g,o,cx,cy){
  g.save();g.translate(cx,cy);g.lineCap='round';g.lineJoin='round';
@@ -2682,7 +2680,7 @@ const drawHero=(function(){
   const metal=o.a>=0?toH(TCOL[o.a]):'#aab4c4',trim='#e0b84c',leather='#5a3a22',cloth=o.cloth,cloth2=o.pants;
   const hc=o.hair||'#5a3418',sx=G.shw;
   g.save();g.translate(cx,by);g.scale(s*(v==='M'?.84:.92),s*(v==='M'?.84:.92));g.lineCap='round';g.lineJoin='round';
-  g.fillStyle='rgba(0,0,0,.3)';g.beginPath();g.ellipse(0,0,25,6.4,0,0,7);g.fill();
+  if(!o.ride){g.fillStyle='rgba(0,0,0,.3)';g.beginPath();g.ellipse(0,0,25,6.4,0,0,7);g.fill()}
   const bob=-Math.abs(cw)*2.2+ib*.5;
   // pose de ataque
   const key=v==='K'?'K':v==='A'?'A':'M',PO=PS[key],pose=mixPose(PO.idle,PO.wind,PO.strike,ka,kr);
@@ -2699,7 +2697,15 @@ const drawHero=(function(){
   if(v==='A'){g.save();g.rotate(-.28);shape(g,'#6a4424',[[3,G.sh-4],[11,G.sh-4],[12,G.sh+28],[2,G.sh+28]]);for(const x of[5,9]){g.strokeStyle='#e8dcc0';g.lineWidth=1.3;g.beginPath();g.moveTo(x,G.sh-4);g.lineTo(x-1,G.sh-12);g.stroke();shape(g,o.accent||'#c8403a',[[x-3,G.sh-11],[x-1,G.sh-18],[x+1,G.sh-11]],{noOl:1})}g.restore()}
   // pernas
   const[l0,l1,l2]=G.lw,bootC=o.bt>=0?sh(toH(TCOL[o.bt]),-.2):'#4a3426';
-  if(v==='M'){const sk=cs*.3;shape(g,cloth,[[-G.hpw,G.hp-4],[-G.hpw-3,G.kn,-G.hpw-9+sk,G.an-1],[-8,G.an+2,0,G.an+1],[8,G.an+2,G.hpw+9+sk,G.an-1],[G.hpw+3,G.kn,G.hpw,G.hp-4]]);
+  if(o.ride){const fl=sh(cloth2,-.28),fb=sh(bootC,-.22);
+   limb(g,fl,4,G.hp,17,G.hp+3,l0,l1);limb(g,fl,17,G.hp+3,19,G.hp+19,l1,l2);
+   shape(g,fb,[[14,G.hp+13],[24,G.hp+13],[26,G.hp+22],[28,G.hp+25],[13,G.hp+25]]);
+   limb(g,cloth2,-2,G.hp,13,G.hp+7,l0,l1);limb(g,cloth2,13,G.hp+7,10,G.hp+25,l1,l2);
+   shape(g,bootC,[[4,G.hp+17],[15,G.hp+17],[16,G.hp+27],[20,G.hp+31],[19,G.hp+35],[3,G.hp+35]]);
+   if(v==='K'&&o.a>=0)shape(g,metal,[[7,G.hp+3],[18,G.hp+3],[17,G.hp+12],[7,G.hp+12]]);
+   if(v==='A'){g.strokeStyle='rgba(240,220,170,.55)';g.lineWidth=1;g.beginPath();g.moveTo(5,G.hp+22);g.lineTo(15,G.hp+23);g.stroke()}
+   if(v==='M'){shape(g,cloth,[[-G.hpw-2,G.hp-4],[G.hpw+6,G.hp-4],[G.hpw+17,G.hp+14],[10,G.hp+24],[-G.hpw,G.hp+14]]);g.strokeStyle=trim;g.lineWidth=2;g.beginPath();g.moveTo(-G.hpw,G.hp+14);g.quadraticCurveTo(0,G.hp+26,10,G.hp+24);g.lineTo(G.hpw+17,G.hp+14);g.stroke()}}
+  else if(v==='M'){const sk=cs*.3;shape(g,cloth,[[-G.hpw,G.hp-4],[-G.hpw-3,G.kn,-G.hpw-9+sk,G.an-1],[-8,G.an+2,0,G.an+1],[8,G.an+2,G.hpw+9+sk,G.an-1],[G.hpw+3,G.kn,G.hpw,G.hp-4]]);
    g.save();g.clip();g.strokeStyle='rgba(0,0,0,.16)';g.lineWidth=1.3;for(let i=-3;i<=3;i++){g.beginPath();g.moveTo(i*3.4,G.hp);g.quadraticCurveTo(i*5,G.kn,i*7+sk,G.an);g.stroke()}g.restore();
    g.strokeStyle=trim;g.lineWidth=2.4;g.beginPath();g.moveTo(-G.hpw-9+sk,G.an-1);g.quadraticCurveTo(sk,G.an+4,G.hpw+9+sk,G.an-1);g.stroke();
    [-5,5].forEach((x,i)=>{const lift=mv?Math.max(0,Math.sin(Z.w+(i?Math.PI:0)))*3.2:0;shape(g,bootC,[[x-5,G.an-1-lift],[x+5,G.an-1-lift],[x+6,G.an+4-lift],[x-6,G.an+4-lift]])})}
@@ -3313,7 +3319,7 @@ function render(dt){
 const DAYLEN=1800,DAYSTART=.33;
 function nightAmt(){const sun=Math.sin(((gameTime/DAYLEN+DAYSTART)%1-.25)*PI2);return clamp(-sun*1.5+.15,0,1)*.62}
 function todHours(){return ((gameTime/DAYLEN+DAYSTART)%1)*24}
-function entSpriteRaw(e){if(e===P||e.pp)return[playerSprite(P),128,116];if(e.type==='npc')return[humanSprite(npcLook(e),'n_'+e.id+'_'+e.x0),128,116];return[monSprite(e.def),160,138]}
+function entSpriteRaw(e){if(e.rid)return[playerSprite(P,1),128,100];if(e===P||e.pp)return[playerSprite(P),128,116];if(e.type==='npc')return[humanSprite(npcLook(e),'n_'+e.id+'_'+e.x0),128,116];return[monSprite(e.def),160,138]}
 const AWAYS={bird:.55,bug:.38,elemental:1.3,blob:1.9,snake:1.5,frog:2.6},IDLEP={humanoid:3.2,dragon:2.6,golem:3.6,beast:3,rodent:2.2};
 function poseOf(e,T){
  const mon=e.type==='mon',k=mon?e.def.kind:'humanoid',seed=(e.seed||0)*.137,TP=Math.PI*2;
@@ -3357,8 +3363,9 @@ function entAnim(e,T){
  return r}
 const MNT_SEAT=.5;let MNTA={oy:0,hop:0};
 function drawEntity(e,ts,ox,oy,T){
- const mt=e===P&&isMounted(),ee=mt?Object.create(e):e;if(mt){ee.pp=1;ee.moving=false;ee.moveT=0}
- const sc=ts/64,[im,iw,fy]=mt?[riderSprite(P),128,96]:entSprite(ee,T),a=entAnim(ee,T),sz=e.type==='mon'?(e.def.size||1):1;
+ if(e===P&&P.mounted&&!isMounted()){petFix();updMntBtn()}
+ const mt=e===P&&isMounted(),ee=mt?Object.create(e):e;if(mt){ee.pp=1;ee.rid=1;ee.moving=false;ee.moveT=0}
+ const sc=ts/64,[im,iw,fy]=entSprite(ee,T),a=entAnim(ee,T),sz=e.type==='mon'?(e.def.size||1):1;
  const gx=(e.px+.5)*ts+ox,gy=(e.py+.93)*ts+oy,bx=gx+a.ox*ts,by=gy+a.oy*ts;
  ctx.fillStyle='rgba(0,0,0,'+.12*a.al*clamp(1-a.hop*1.6,.3,1)+')';ctx.beginPath();ctx.ellipse(gx+a.ox*ts*.7,gy+a.oy*ts*.7-ts*.02,ts*.3*Math.min(sz,1.8)*(1-a.hop*.5),ts*.1*Math.min(sz,1.8)*(1-a.hop*.5),0,0,PI2);ctx.fill();
  if(mt)drawMount(ts,ox,oy,T);
@@ -4029,12 +4036,12 @@ const MOUNTS={
  panther:{n:'Pantera Sombria',mon:'panther',lvl:400,price:12000000,spd:26,sc:1.2,rl:-.1}};
 const PET_XP=[0,25,70,150,280,480,780,1250,2000,3200];
 let petEnt=null;
-function petFix(){if(!P)return;if(!P.pets)P.pets={own:{},act:null};if(!P.mnts)P.mnts={own:{},act:null};if(P.mounted===undefined)P.mounted=false}
+function petFix(){if(!P)return;if(!P.pets)P.pets={own:{},act:null};if(!P.mnts||typeof P.mnts!=='object')P.mnts={own:{},act:null};if(!P.mnts.own)P.mnts.own={};if(P.mnts.act&&!MOUNTS[P.mnts.act])P.mnts.act=null;if(P.mounted===undefined||!P.mnts.act)P.mounted=false}
 function petLv(id){id=id||(P.pets&&P.pets.act);const o=id&&P.pets.own[id];return o?PET_XP.filter(x=>o.xp>=x).length:0}
 function mountF(){return P&&P.mounted&&P.mnts&&P.mnts.act&&MOUNTS[P.mnts.act]?1-MOUNTS[P.mnts.act].spd/100:1}
 function isMounted(){return !!(P&&P.mounted&&P.mnts&&P.mnts.act&&MOUNTS[P.mnts.act])}
 function updMntBtn(){const b=$('btnmnt');if(!b||!P)return;petFix();const has=Object.keys(P.mnts.own).length>0;b.hidden=!has;b.title=P.mounted?'Desmontar (R)':'Montar (R)';b.classList.toggle('on',!!P.mounted)}
-function toggleMount(){if(!P||P.dead)return;petFix();if(!P.mnts.act){log('Você não tem uma montaria ativa. Procure o Cocheiro de uma cidade.','warn');return}
+function toggleMount(){if(!P||P.dead)return;petFix();P.path=null;P.moving=false;P.moveT=1;P.atkT=0;if(!P.mnts.act){log('Você não tem uma montaria ativa. Procure o Cocheiro de uma cidade.','warn');return}
  P.mounted=!P.mounted;log(P.mounted?'Você montou em '+MOUNTS[P.mnts.act].n+' (+'+MOUNTS[P.mnts.act].spd+'% de velocidade).':'Você desmontou.','quest');updMntBtn();sfx('lvl')}
 function petSync(){const a=P.pets&&P.pets.act&&PETS[P.pets.act]&&P.pets.own[P.pets.act]?P.pets.act:null;
  if(!a||(petEnt&&petEnt.pid!==a)){if(petEnt){const i=activeEnts.indexOf(petEnt);if(i>=0)activeEnts.splice(i,1);petEnt=null}}
