@@ -2,7 +2,7 @@ plugins { id 'com.android.application' }
 android {
     namespace 'com.aldora.game'
     compileSdk 34
-    defaultConfig { applicationId "com.aldora.game"; minSdk 24; targetSdk 34; versionCode 58; versionName "3.36.1" }
+    defaultConfig { applicationId "com.aldora.game"; minSdk 24; targetSdk 34; versionCode 59; versionName "3.37" }
     def ksPath = System.getenv('KS_PATH')
     if (ksPath && new File(ksPath).exists()) {
         signingConfigs { debug { storeFile file(ksPath); storePassword 'android'; keyAlias 'androiddebugkey'; keyPassword 'android' } }
