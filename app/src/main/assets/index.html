@@ -17,6 +17,7 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 #stbar b{font:700 11px system-ui;padding:1px 6px;border-radius:9px;border:1px solid rgba(255,255,255,.25);color:#10100c}
 #tinfo{font-size:11px;color:var(--muted);margin:1px 0 3px}
 #tinfo i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:baseline}
+#hud .nm{display:flex;align-items:center;gap:6px;min-width:0}#hud .nm #pname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#hudprof{flex:none;width:24px;height:24px;padding:0;border-radius:50%;border:1px solid var(--gold);background:rgba(0,0,0,.35);color:var(--gold);font-size:13px;line-height:1;cursor:pointer;pointer-events:auto}#hudprof:active{background:rgba(255,210,80,.25)}
 #hud .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 #pname{font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #plvl{color:var(--gold);font-weight:700}
@@ -132,7 +133,7 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 @media(max-height:480px){#spells{--ss:42px!important;gap:4px;padding:5px 7px}#log{bottom:max(112px,calc(env(safe-area-inset-bottom,0px) + 112px))!important;max-height:70px}#tgt{bottom:max(138px,calc(env(safe-area-inset-bottom,0px) + 138px))!important}#dlg{bottom:max(110px,calc(env(safe-area-inset-bottom,0px) + 110px))!important}#btnuntarget{bottom:max(116px,calc(env(safe-area-inset-bottom,0px) + 116px))!important}}</style>
 <style>#tr,#menu{pointer-events:none}#tr #mmw,#menu button,#more:not([hidden]){pointer-events:auto}</style>
 <canvas id="c"></canvas>
-<div id="hud" class="box"><div class="top"><span id="pname"></span><span id="plvl"></span></div>
+<div id="hud" class="box"><div class="top"><span class="nm"><span id="pname"></span><button id="hudprof" type="button" title="Perfil (C)" aria-label="Perfil">👤</button></span><span id="plvl"></span></div>
 <div class="bar"><i id="hpf"></i><span id="hpt"></span></div><div class="bar"><i id="mpf"></i><span id="mpt"></span></div><div class="bar xp"><i id="xpf"></i></div><div id="stbar"></div>
 <div class="meta"><span>Ouro <b id="gold">0</b></span><span>WASD · clique p/ andar</span></div></div>
 <div id="tgt" class="box" hidden><div id="tname"></div><div id="tinfo"></div><div class="bar"><i id="thp"></i></div></div>
@@ -5884,6 +5885,59 @@ function buildCamp(c,a){const g0=world.ground[0],base=baseGround(c.biome),pt=(dx
  world.camps.push({city:c.idx,x:a.x,y:a.y})}
 function stageTraining(){world.camps=[];world.cities.forEach(c=>{if(!c.rect)return;const a=campSite(c);if(a)buildCamp(c,a)});computeWalk(0);if(typeof rebuildSpawnGrid==='function')rebuildSpawnGrid()}
 
+// ===== Mapas do Tesouro: drop, dica, escavar, guardiões e baú =====
+Object.assign(O,{TCHEST:124});MARG[124]=12;OBJWALK.add(124);
+addItem({id:'mapa_tesouro',name:'Mapa do Tesouro',type:'mat',lvl:1,price:40,icon:'scroll',color:[220,190,130]});
+ICONS['mapa_tesouro']=mk(96,96,g=>{g.save();g.translate(24,24);g.rotate(-.08);g.fillStyle='#d9bd82';g.strokeStyle='#5a3a18';g.lineWidth=1.6;g.beginPath();g.rect(-2,-4,44,38);g.fill();g.stroke();
+ g.fillStyle='#e8d09a';g.fillRect(0,-2,40,34);g.strokeStyle='rgba(90,60,24,.55)';g.lineWidth=1;g.beginPath();g.moveTo(4,10);g.quadraticCurveTo(14,2,22,14);g.quadraticCurveTo(28,22,36,14);g.stroke();
+ g.setLineDash([2,2]);g.beginPath();g.moveTo(6,26);g.quadraticCurveTo(16,20,24,24);g.lineTo(32,20);g.stroke();g.setLineDash([]);
+ g.strokeStyle='#b02020';g.lineWidth=3;g.beginPath();g.moveTo(28,18);g.lineTo(36,26);g.moveTo(36,18);g.lineTo(28,26);g.stroke();g.restore()}).toDataURL();
+const _objSpriteTr=objSprite;objSprite=function(o,v){if(o===O.TCHEST)return spr('tchest',()=>mk(64,56,(g,w,h)=>{const cx=w/2,by=h-6;shadow(g,cx,by,24,5,.3);
+ g.lineJoin='round';g.fillStyle='#7a4a22';g.strokeStyle='#2a1608';g.lineWidth=2;rrect(g,cx-22,by-26,44,26,3);g.fill();g.stroke();
+ g.fillStyle='#93602c';g.beginPath();g.moveTo(cx-22,by-24);g.quadraticCurveTo(cx,by-52,cx+22,by-24);g.closePath();g.fill();g.stroke();
+ g.fillStyle='#e0b83a';g.strokeStyle='#5a4210';g.lineWidth=1.4;for(const k of[-14,12]){g.fillRect(cx+k,by-34,5,34);g.strokeRect(cx+k,by-34,5,34)}
+ g.fillRect(cx-4,by-22,8,10);g.strokeRect(cx-4,by-22,8,10);g.fillStyle='#2a1608';g.fillRect(cx-1,by-19,2,4)}));return _objSpriteTr(o,v)};
+const _sceneGlowTr=sceneGlow;sceneGlow=function(o,x,y,ts){if(o===O.TCHEST)return['rgba(255,210,80,'+(.22+.08*Math.sin(gameTime*5))+')',ts*1.8];return _sceneGlowTr(o,x,y,ts)};
+const TMAX=3;
+function tmDirName(dx,dy){const a=Math.atan2(dy,dx)*180/Math.PI;return['Leste','Sudeste','Sul','Sudoeste','Oeste','Noroeste','Norte','Nordeste'][((Math.round(a/45)%8)+8)%8]}
+function tmPick(){for(let t=0;t<900;t++){const x=ri(12,W-12),y=ri(12,W-12),i=y*W+x,d=Math.hypot(x-P.x,y-P.y);
+  if(d<35||d>170)continue;if(!world.walk[0][i]||world.safe[i]||!world.reach[i]||world.obj[0][i])continue;return{x,y}}return null}
+function tmGen(L){const p=tmPick();if(!p)return null;return{x:p.x,y:p.y,ox:ri(-8,8),oy:ri(-8,8),lvl:Math.max(1,Math.round(L))}}
+const _killMonTr=killMon;killMon=function(m){const d=m.def;const r=_killMonTr(m);
+ try{if(m.tg){return r}if(d.still||d.lvl<3||P.layer!==0)return r;if(Math.random()<(d.boss?.5:.03)){if(P.inv.filter(s=>s.tm).length>=TMAX||P.inv.length>=INVMAX)return r;
+  const tm=tmGen(d.lvl);if(tm){P.inv.push({id:'mapa_tesouro',n:1,tm});log('Você encontrou um Mapa do Tesouro! Abra a mochila para estudá-lo.','loot');toast('🗺 Mapa do Tesouro!');if(typeof sfx==='function')sfx('coin')}}}catch(e){console.error('tm',e)}return r};
+const _evTr=evTargets;evTargets=function(){const o=_evTr();if(P&&P.layer===0)for(const s of P.inv)if(s.tm)o.push([s.tm.x+s.tm.ox,s.tm.y+s.tm.oy,'fest','Tesouro (aprox.)']);return o};
+function tmUse(idx){const s=P.inv[idx];if(!s||!s.tm)return;const t=s.tm;
+ if(P.layer!==0){log('O mapa só pode ser lido na superfície.','warn');return}
+ const dx=t.x-P.x,dy=t.y-P.y,d=Math.hypot(dx,dy);
+ if(Math.max(Math.abs(dx),Math.abs(dy))<=2){tmDig(idx);return}
+ const ap=Math.round(Math.hypot(dx+t.ox*0,dy)/10)*10;
+ log('O mapa indica o '+tmDirName(dx,dy)+', a cerca de '+Math.max(10,ap)+' passos. A área aproximada está marcada no minimapa e no mapa-múndi (ícone dourado). Chegue bem perto e use o mapa de novo para cavar.','info');toast('🗺 '+tmDirName(dx,dy)+' · ~'+Math.max(10,ap)+' passos')}
+function tmDig(idx){const s=P.inv[idx];const t=s.tm;P.inv.splice(idx,1);selItem=null;
+ const g0=P.cnt||(P.cnt={});(g0.tc=g0.tc||[]).push({x:t.x,y:t.y,lvl:t.lvl,id:Date.now()%1e9});const c=g0.tc[g0.tc.length-1];
+ burst(t.x,t.y,'#a07040',18);toast('⛏ Você cavou… algo está enterrado aqui!');log('Você cavou e encontrou um baú! Guardiões surgem para protegê-lo.','warn');
+ tmPlace(c);tmGuards(c);refreshUI();if(typeof renderPanel==='function')renderPanel()}
+function tmPlace(c){const i=c.y*W+c.x;if(world.obj[0][i]!==O.TCHEST){world.obj[0][i]=O.TCHEST;world.vr[0][i]=0}}
+function tmGuards(c){const L=c.lvl,ids=Object.keys(MON).filter(k=>{const d=MON[k];return!d.boss&&!d.still&&d.kind!=='dummy'&&d.lvl>=L*.7&&d.lvl<=L*1.15&&d.lvl>=2});
+ let pool=ids;if(!pool.length){pool=Object.keys(MON).filter(k=>!MON[k].boss&&!MON[k].still&&MON[k].kind!=='dummy').sort((a,b)=>Math.abs(MON[a].lvl-L)-Math.abs(MON[b].lvl-L)).slice(0,5)}
+ const n=L>60?4:3;let made=0;for(let t=0;t<60&&made<n;t++){const a=Math.random()*6.28,r=2+Math.random()*3,x=Math.round(c.x+Math.cos(a)*r),y=Math.round(c.y+Math.sin(a)*r);
+  const s={m:pick(pool),x,y,l:0,t:0,hm:1.15,ent:null};spawnMon(s);if(s.ent){s.ent.tg=c.id;s.ent.xm=1.4;made++}}}
+function tmOpen(c){const cs=P.cnt.tc,i=cs.indexOf(c);if(i>=0)cs.splice(i,1);world.obj[0][c.y*W+c.x]=0;burst(c.x,c.y,'#ffd84a',30);if(typeof sfx==='function')sfx('coin');
+ const L=c.lvl,got=[],gold=Math.round(BAL.G(L)*L*rr(14,26));P.gold+=gold;
+ const pots=Object.keys(ITEMS).filter(k=>ITEMS[k].type==='potion'&&(ITEMS[k].lvl||1)<=Math.max(L,3)).sort((a,b)=>ITEMS[b].val-ITEMS[a].val).slice(0,3);
+ for(const k of pots){const n=ri(2,5);if(giveItem(k,n))got.push(n+'x '+ITEMS[k].name)}
+ const ids=Object.keys(MON).filter(k=>!MON[k].boss&&!MON[k].still&&MON[k].kind!=='dummy'&&Math.abs(MON[k].lvl-L)<=Math.max(4,L*.25));const dd=MON[pick(ids.length?ids:Object.keys(MON).filter(k=>!MON[k].still))];
+ try{for(let k=0;k<3;k++)dropEquip(dd,got);matDrops(dd).forEach(x=>got.push(x));matDrops(dd).forEach(x=>got.push(x))}catch(e){console.error('tmo',e)}
+ const xp=Math.round(BAL.X(dd)*4);gainExp(xp);float(P,'+'+xp+' xp','#ffe070');
+ log('Você abriu o baú do tesouro! '+fmt(gold)+' de ouro'+(got.length?', '+got.join(', '):'')+'. Experiência: +'+fmt(xp)+' xp.','loot');toast('💰 Tesouro: +'+fmt(gold)+' ouro');refreshUI()}
+setInterval(()=>{try{if(!P||!world||P.dead||!P.cnt||!P.cnt.tc||!P.cnt.tc.length)return;
+ for(const c of P.cnt.tc.slice()){tmPlace(c);if(P.layer!==0)continue;if(Math.max(Math.abs(P.x-c.x),Math.abs(P.y-c.y))<=1&&!monsters.some(m=>m.tg===c.id&&m.hp>0)){tmOpen(c)}}}catch(e){console.error('tmint',e)}},300);
+const _equipIdxTr=equipIdx;equipIdx=function(idx){const s=P.inv[idx];if(s&&s.id==='mapa_tesouro'){tmUse(idx);return}return _equipIdxTr(idx)};
+const _itemCardTr=itemCard;itemCard=function(){const c=_itemCardTr();try{if(selItem&&selItem.id==='mapa_tesouro'&&selItem.from==='inv'){const sl=P.inv[selItem.idx],bt=c.querySelector('.ibt');
+ const b=el('button','opt go','Estudar / Cavar');b.onclick=()=>tmUse(selItem.idx);bt.insertBefore(b,bt.firstChild);
+ const rows=c.querySelectorAll('.sr');rows.forEach(r=>{if(r.firstChild.textContent==='Uso')r.lastChild.textContent='Indica um tesouro enterrado';});
+ if(sl&&sl.tm){const r=el('div','sr');r.innerHTML='<span></span><b></b>';r.firstChild.textContent='Perigo';r.lastChild.textContent='Nível ~'+sl.tm.lvl;c.querySelector('.ist').appendChild(r)}}}catch(e){}return c};
+
 // ===== INTERFACE =====
 const $=id=>document.getElementById(id);
 const el=(tag,cls,html)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(html!==undefined)e.innerHTML=html;return e};
@@ -5986,7 +6040,8 @@ function renderPanel(){const p=$('pbody');p.innerHTML='';$('ptitle').textContent
  else if(panelTab==='lore')renderLore(p);
  else if(panelTab==='opt')renderOpts(p);
  else if(panelTab==='char'){const v=VOCS[P.voc],nx=expFor(P.lvl+1);p.innerHTML='<div class="stats col"><span>Nome <b>'+P.name+'</b></span><span>Vocação <b>'+v.name+'</b></span><span>Nível <b>'+P.lvl+'</b></span><span>Experiência <b>'+fmt(P.exp)+' / '+fmt(nx)+'</b></span><span>Vida <b>'+P.maxhp+'</b></span><span>Mana <b>'+P.maxmp+'</b></span><span>Defesa <b>'+totalDef()+'</b></span><span>Especialização <b>'+(P.spec?SPEC[P.spec].name:'—')+'</b></span><span>Monstros abatidos <b>'+fmt(P.kills)+'</b></span><span>Cidades descobertas <b>'+Object.keys(P.cities).length+' / '+world.cities.length+'</b></span><span>Locais descobertos <b>'+Object.keys(P.pois).length+' / '+world.pois.length+'</b></span><span>Lar <b>'+world.cities.find(c=>c.id===P.home).name+'</b></span></div><p class="muted">'+v.desc+'</p>';const bl=el('button','opt','🎨 Mudar aparência');bl.onclick=openLookEditor;p.appendChild(bl);const be=el('button','opt','💾 Exportar progresso');be.onclick=()=>{saveGame();openExport(P.cid,P.name)};p.appendChild(be)}}
-document.querySelectorAll('#menu button[data-p],#more button[data-p]').forEach(b=>b.onclick=()=>{$('more').hidden=true;togglePanel(b.dataset.p)});$('btnmore').onclick=e=>{e.stopPropagation();$('more').hidden=!$('more').hidden};document.addEventListener('pointerdown',e=>{if(panelTab&&!e.target.closest('#panel,#menu,#more,#bkmodal,#mapwin,#dlg,#audbox,#death,#start'))togglePanel(null)});document.addEventListener('pointerdown',e=>{if(!$('more').hidden&&!e.target.closest('#more,#btnmore'))$('more').hidden=true});
+document.querySelectorAll('#menu button[data-p],#more button[data-p]').forEach(b=>b.onclick=()=>{$('more').hidden=true;togglePanel(b.dataset.p)});$('btnmore').onclick=e=>{e.stopPropagation();$('more').hidden=!$('more').hidden};document.addEventListener('pointerdown',e=>{if(panelTab&&!e.target.closest('#panel,#menu,#more,#hudprof,#bkmodal,#mapwin,#dlg,#audbox,#death,#start'))togglePanel(null)});document.addEventListener('pointerdown',e=>{if(!$('more').hidden&&!e.target.closest('#more,#btnmore'))$('more').hidden=true});
+$('hudprof').onclick=e=>{e.stopPropagation();$('more').hidden=true;togglePanel('char')};
 $('mzin').onclick=()=>stepMapZoom(1);$('mzout').onclick=()=>stepMapZoom(-1);$('mzreset').onclick=()=>{setMapZoom(1);};
 (function(){const sc=$('mapscroll');let d=null;
  sc.addEventListener('pointerdown',e=>{if(e.pointerType==='touch')return;d={x:e.clientX,y:e.clientY,l:sc.scrollLeft,t:sc.scrollTop};sc.classList.add('drag');sc.setPointerCapture(e.pointerId)});
