@@ -4077,7 +4077,7 @@ function sfx(t){if(!soundOn)return;try{audInit();const o=AC.createOscillator(),g
 // ===== NÚCLEO DO JOGO =====
 let P=null;const monsters=[],activeEnts=[],corpses=[],projs=[],parts=[],rings=[],floaters=[],npcEnts=[],fx=[],dying=[];let achT=2,hitStop=0,frameNo=0;
 const occ=new Map(),keys={};let uid=1,paused=true,spawnT=0,entT=0,discT=0,saveT=0,regenT=0;
-const INVMAX=40,SAVEKEY='aldora_save_v1';
+const INVMAX=40;function invMax(){return 40+5*Math.min(5,(typeof P!=="undefined"&&P&&P.cnt&&P.cnt.bx)||0)}const SAVEKEY='aldora_save_v1';
 let seen=[0,1,2,3].map(()=>new Uint8Array((W>>2)*(H>>2)));const known=[null,null];
 function resizeBuffers(){seen=[0,1,2,3].map(()=>new Uint8Array((W>>2)*(H>>2)));gS=new Float32Array(N);cF=new Int32Array(N);stp=new Uint32Array(N);stampN=0}
 const okey=(l,x,y)=>l*N+y*W+x;
@@ -4110,8 +4110,8 @@ function gainExp(n){P.exp+=n;let up=false;while(P.exp>=expFor(P.lvl+1)){P.lvl++;
 // ---------- inventário ----------
 function invCount(id){let n=0;for(const s of P.inv)if(s.id===id)n+=s.n;return n}
 function giveItem(id,n){n=n||1;const it=ITEMS[id];if(!it)return false;
- if(it.type==='equip'){for(let i=0;i<n;i++){if(P.inv.length>=INVMAX)return false;P.inv.push({id,n:1})}return true}
- const s=P.inv.find(s=>s.id===id&&s.n<9999);if(s){s.n+=n;return true}if(P.inv.length>=INVMAX)return false;P.inv.push({id,n});return true}
+ if(it.type==='equip'){for(let i=0;i<n;i++){if(P.inv.length>=invMax())return false;P.inv.push({id,n:1})}return true}
+ const s=P.inv.find(s=>s.id===id&&s.n<9999);if(s){s.n+=n;return true}if(P.inv.length>=invMax())return false;P.inv.push({id,n});return true}
 function removeItem(id,n){for(let i=P.inv.length-1;i>=0&&n>0;i--){const s=P.inv[i];if(s.id!==id)continue;const t=Math.min(n,s.n);s.n-=t;n-=t;if(!s.n)P.inv.splice(i,1)}}
 function equipIdx(idx){const s=P.inv[idx];if(!s)return;const it=ITEMS[s.id];
  if(it.type==='potion'){usePotionId(s.id);return}
@@ -4119,7 +4119,7 @@ function equipIdx(idx){const s=P.inv[idx];if(!s)return;const it=ITEMS[s.id];
  if(P.lvl<it.lvl){log('Você precisa do nível '+it.lvl+' para usar '+it.name+'.','warn');return}
  if(it.voc&&it.voc!==P.voc){log(it.name+' é equipamento de '+VOCS[it.voc].name+'.','warn');return}
  const old=P.eq[it.slot];P.eq[it.slot]=it.id;P.inv.splice(idx,1);if(old)P.inv.push({id:old,n:1});log('Equipou '+itemName(it)+'.');eqChanged();refreshUI()}
-function unequip(slot){const id=P.eq[slot];if(!id)return;if(P.inv.length>=INVMAX){log('Mochila cheia.','warn');return}P.eq[slot]=null;P.inv.push({id,n:1});eqChanged();refreshUI()}
+function unequip(slot){const id=P.eq[slot];if(!id)return;if(P.inv.length>=invMax()){log('Mochila cheia.','warn');return}P.eq[slot]=null;P.inv.push({id,n:1});eqChanged();refreshUI()}
 function usePotionId(id){const it=ITEMS[id];if(P.potCd>0||P.dead)return;
  if(it.kind==='hp'){if(P.hp>=P.maxhp){log('Sua vida já está cheia.');return}P.hp=Math.min(P.maxhp,P.hp+it.val);float(P,'+'+it.val,'#5ee07a')}
  else{if(P.mp>=P.maxmp){log('Sua mana já está cheia.');return}P.mp=Math.min(P.maxmp,P.mp+it.val);float(P,'+'+it.val,'#6aa0ff')}
@@ -5904,7 +5904,7 @@ function tmPick(){for(let t=0;t<900;t++){const x=ri(12,W-12),y=ri(12,W-12),i=y*W
   if(d<35||d>170)continue;if(!world.walk[0][i]||world.safe[i]||!world.reach[i]||world.obj[0][i])continue;return{x,y}}return null}
 function tmGen(L){const p=tmPick();if(!p)return null;return{x:p.x,y:p.y,ox:ri(-8,8),oy:ri(-8,8),lvl:Math.max(1,Math.round(L))}}
 const _killMonTr=killMon;killMon=function(m){const d=m.def;const r=_killMonTr(m);
- try{if(m.tg){return r}if(d.still||d.lvl<3||P.layer!==0)return r;if(Math.random()<(d.boss?.5:.03)){if(P.inv.filter(s=>s.tm).length>=TMAX||P.inv.length>=INVMAX)return r;
+ try{if(m.tg){return r}if(d.still||d.lvl<3||P.layer!==0)return r;if(Math.random()<(d.boss?.5:.03)){if(P.inv.filter(s=>s.tm).length>=TMAX||P.inv.length>=invMax())return r;
   const tm=tmGen(d.lvl);if(tm){P.inv.push({id:'mapa_tesouro',n:1,tm});log('Você encontrou um Mapa do Tesouro! Abra a mochila para estudá-lo.','loot');toast('🗺 Mapa do Tesouro!');if(typeof sfx==='function')sfx('coin')}}}catch(e){console.error('tm',e)}return r};
 const _evTr=evTargets;evTargets=function(){const o=_evTr();if(P&&P.layer===0)for(const s of P.inv)if(s.tm)o.push([s.tm.x+s.tm.ox,s.tm.y+s.tm.oy,'fest','Tesouro (aprox.)']);return o};
 function tmUse(idx){const s=P.inv[idx];if(!s||!s.tm)return;const t=s.tm;
@@ -5976,7 +5976,7 @@ function fishStart(){if(FS){fishStop('Você recolheu a linha.');return}
  selItem=null;if(panelTab)togglePanel(null);const L=ofS().fish.l;
  FS={w,t:Date.now(),wait:Math.max(1500,(5200-L*30)+Math.random()*3200),px:P.x,py:P.y};P.face=w.x>=P.x?1:-1;log('Você lança a linha… (mova-se ou toque na vara de novo para parar)','info');toast('🎣 Pescando…')}
 function fishPick(w){const L=ofS().fish.l,r=Math.random();
- if(r<.015&&typeof tmGen==='function'&&P.inv.filter(s=>s.tm).length<3){const tm=tmGen(Math.max(5,P.lvl));if(tm&&P.inv.length<INVMAX){P.inv.push({id:'mapa_tesouro',n:1,tm});return{msg:'Uma garrafa com um Mapa do Tesouro dentro!',bottle:1}}}
+ if(r<.015&&typeof tmGen==='function'&&P.inv.filter(s=>s.tm).length<3){const tm=tmGen(Math.max(5,P.lvl));if(tm&&P.inv.length<invMax()){P.inv.push({id:'mapa_tesouro',n:1,tm});return{msg:'Uma garrafa com um Mapa do Tesouro dentro!',bottle:1}}}
  if(r<.04)return{id:'perola',n:1};if(r<.12)return{id:'bota_velha',n:1};
  const el0=FSH.filter(f=>f[2]<=L&&(f[3]===2||(f[3]===1)===w.deep));if(!el0.length)return{id:'peixe_sardinha',n:1};
  const wt=el0.map(f=>1+Math.pow((f[2]+8)/(L+8),2)*4);let t=Math.random()*wt.reduce((a,b)=>a+b,0),f=el0[0];for(let i=0;i<el0.length;i++){t-=wt[i];if(t<=0){f=el0[i];break}}
@@ -6035,6 +6035,30 @@ const _icFi=itemCard;itemCard=function(){const c=_icFi();try{if(!selItem||selIte
   h+='<div class="skr"><div class="skt"><span>'+OFI[k].ic+' '+OFI[k].nm+'</span><b>'+s.l+(s.l>=SKMAX?' (máx.)':'')+'</b></div><div class="skb"><i style="width:'+pc+'%"></i></div><div class="skd">'+OFI[k].ds+' · '+(s.l>=SKMAX?'completa':fmt(s.x)+' / '+fmt(need))+'</div></div>'}
  const b=fbOn();if(b)h+='<div class="skd" style="color:#ffd070">Efeito ativo: '+FEFF[b.k][0]+' ('+Math.ceil((b.t-gameTime)/60)+' min restantes)</div>';
  box.innerHTML=h;const sk=p.querySelector('.skbox');if(sk)sk.after(box);else p.appendChild(box)}})();
+
+// ===== Expansão da mochila: até 5 expansões de +5 slots, pagas em ouro =====
+const BAGCOST=[7500,25000,75000,200000,500000];
+let bagArm=0;
+function bagBuy(){const n=(P.cnt&&P.cnt.bx)||0;if(n>=5)return;const c=BAGCOST[n];
+ if(P.gold<c){log('Ouro insuficiente: a expansão custa '+fmt(c)+' de ouro.','warn');toast('Faltam '+fmt(c-P.gold)+' de ouro');bagArm=0;renderPanel();return}
+ if(Date.now()>bagArm){bagArm=Date.now()+4000;renderPanel();return}
+ P.gold-=c;P.cnt.bx=n+1;bagArm=0;try{sfx('coin')}catch(e){}log('Mochila expandida! Agora tem '+invMax()+' espaços.','lvl');toast('🎒 Mochila: '+invMax()+' espaços');refreshUI();try{saveGame()}catch(e){}}
+(function(){const _rp=renderPanel;renderPanel=function(){_rp();if(panelTab!=='inv')return;const p=$('pbody'),g=p&&p.querySelector('.grid');if(!g)return;
+ if(!P.cnt)P.cnt={deaths:0,bossk:{}};const n=P.cnt.bx||0,box=document.createElement('div');box.className='bagbox';
+ const t=document.createElement('span');t.textContent='Mochila: '+P.inv.length+' / '+invMax()+' espaços ('+n+'/5 expansões)';box.appendChild(t);
+ if(n<5){const b=document.createElement('button');b.className='opt go';const armed=Date.now()<bagArm;b.textContent=armed?'Toque de novo para confirmar':'Expandir +5 · '+fmt(BAGCOST[n])+' ouro';b.onclick=bagBuy;box.appendChild(b)}
+ else{const s=document.createElement('b');s.textContent='Máximo';box.appendChild(s)}
+ g.before(box)}})();
+(function(){const st=document.createElement('style');st.textContent='.bagbox{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0;font-size:12px;opacity:.95}.bagbox .opt{padding:6px 10px;font-size:12px;flex:none}';document.head.appendChild(st)})();
+
+// ---- descartar itens direto da mochila (toque duplo para confirmar) ----
+let dscArm=null;
+const _icBag=itemCard;itemCard=function(){const c=_icBag();try{if(!selItem||selItem.from!=='inv')return c;const idx=selItem.idx,s=P.inv[idx];if(!s||s.id==='vara_pesca')return c;const it=ITEMS[s.id],bt=c.querySelector('.ibt');
+ const mk2=(label,n)=>{const key=idx+':'+s.id+':'+n,armed=dscArm&&dscArm.k===key&&Date.now()<dscArm.t,b=el('button','opt',armed?'Confirmar descarte':label);b.style.color='#ff9a8a';
+  b.onclick=()=>{if(!armed){dscArm={k:key,t:Date.now()+4000};renderPanel();return}
+   dscArm=null;const cur=P.inv[idx];if(!cur||cur.id!==s.id)return;if(n>=cur.n)P.inv.splice(idx,1);else cur.n-=n;
+   log('Você descartou '+(n>1?n+'x ':'')+itemName(it)+'.','info');if(!P.inv[idx]||P.inv[idx].id!==s.id)selItem=null;try{refreshUI()}catch(e){}renderPanel()};bt.appendChild(b)};
+ if(s.n>1){mk2('Descartar 1',1);mk2('Descartar todos ('+s.n+')',s.n)}else mk2('Descartar',1)}catch(e){console.error('dsc',e)}return c};
 
 // ===== INTERFACE =====
 const $=id=>document.getElementById(id);
@@ -6132,7 +6156,7 @@ function renderPanel(){const p=$('pbody');p.innerHTML='';$('ptitle').textContent
   const st=el('div','stats');st.innerHTML='<span>Defesa <b>'+totalDef()+'</b></span><span>Ataque <b>'+Math.round((P.eq.weapon?ITEMS[P.eq.weapon].atk:3)*(1+P.lvl*.04)*VOCS[P.voc].mul+P.lvl*.8)+'</b></span><span>Ouro <b>'+fmt(P.gold)+'</b></span>';p.appendChild(st);
   if(selItem){const ok=selItem.from==='eq'?P.eq[selItem.slot]===selItem.id:(P.inv[selItem.idx]&&P.inv[selItem.idx].id===selItem.id);if(!ok)selItem=null}
   if(selItem){p.appendChild(itemCard())}
-  const g=el('div','grid');for(let i=0;i<INVMAX;i++){const s=P.inv[i],d=el('button','cell');if(s){const it=ITEMS[s.id];if(it.rar)d.classList.add('r'+it.rar);d.innerHTML='<img alt=""><i></i>';d.firstChild.src=iconURL(it);d.lastChild.textContent=s.n>1?s.n:'';d.title=it.name+' — '+itemStats(it);if(selItem&&selItem.from==='inv'&&selItem.idx===i)d.classList.add('sel');d.onclick=()=>{selItem={from:'inv',idx:i,id:s.id};renderPanel()}}g.appendChild(d)}p.appendChild(g)}
+  const g=el('div','grid');for(let i=0;i<invMax();i++){const s=P.inv[i],d=el('button','cell');if(s){const it=ITEMS[s.id];if(it.rar)d.classList.add('r'+it.rar);d.innerHTML='<img alt=""><i></i>';d.firstChild.src=iconURL(it);d.lastChild.textContent=s.n>1?s.n:'';d.title=it.name+' — '+itemStats(it);if(selItem&&selItem.from==='inv'&&selItem.idx===i)d.classList.add('sel');d.onclick=()=>{selItem={from:'inv',idx:i,id:s.id};renderPanel()}}g.appendChild(d)}p.appendChild(g)}
  else if(panelTab==='quests'){const act=QDEF.filter(q=>P.q[q.id]&&P.q[q.id].st==='active'),done=QDEF.filter(q=>qDone(q)).length;
   if(!act.length)p.appendChild(el('p','muted','Nenhuma missão ativa. Procure NPCs com <b style="color:#ffd84a">!</b> sobre a cabeça nas cidades.'));
   act.forEach(q=>{const c=world.cities.find(c=>c.id===q.city),d=el('div','quest');const pr=qProgress(q),rd=qReady(q);
