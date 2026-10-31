@@ -3902,11 +3902,11 @@ function render(dt){
   const sun=Math.sin(((T/DAYLEN+DAYSTART)%1-.25)*PI2),wm=clamp(1-Math.abs(sun)/.3,0,1)*.14;if(wm>.01){ctx.fillStyle='rgba(255,130,50,'+wm+')';ctx.fillRect(0,0,cw,ch)}}
  if(!OPT.eco){drawAmbient(ts);drawWeather(ts,sx,sy)}
  // plaquinhas
- for(const e of activeEnts)if(e.l===l&&e.type==='mon'&&e.px>x0&&e.px<x1&&e.py>y0&&e.py<y1)plate(e,ts,ox,oy);
+ for(const e of activeEnts)if(e.l===l&&(e.type==='mon'||e.type==='npc')&&e.px>x0&&e.px<x1&&e.py>y0&&e.py<y1)plate(e,ts,ox,oy);
  plate(P,ts,ox,oy);
  for(const f of floaters){if(f.l!==l)continue;const t=f.t,al=clamp(t<.12?t/.12:1-(t-1)/.5,0,1),pop=1+.7*Math.max(0,1-t/.2),x=(f.x+.5)*ts+ox+f.vx*t*ts*.5,y=f.y*ts+oy-(1-Math.exp(-t*3.2))*ts*1.15-ts*.25;ctx.globalAlpha=al;ctx.font='800 '+(f.big?ts*.46:ts*.3)*pop+'px system-ui,sans-serif';ctx.textAlign='center';ctx.lineWidth=3.5;ctx.lineJoin='round';ctx.strokeStyle='rgba(0,0,0,.85)';ctx.strokeText(f.txt,x,y);ctx.fillStyle=f.col;ctx.fillText(f.txt,x,y)}ctx.globalAlpha=1;
 }
-const DAYLEN=1800,DAYSTART=.33;
+const DAYLEN=600,DAYSTART=.33;
 function nightAmt(){const sun=Math.sin(((gameTime/DAYLEN+DAYSTART)%1-.25)*PI2);return clamp(-sun*1.5+.15,0,1)*.62}
 function todHours(){return ((gameTime/DAYLEN+DAYSTART)%1)*24}
 function entSpriteRaw(e){if(e.rid)return[playerSprite(P,1),128,100];if(e===P||e.pp)return[playerSprite(P),128,116];if(e.type==='npc')return[humanSprite(npcLook(e),'n_'+e.id+'_'+e.x0),128,116];return[monSprite(e.def),160,138]}
