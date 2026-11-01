@@ -3897,7 +3897,7 @@ function render(dt){
   for(const c of world.cities){if(c.rect.x1<x0||c.rect.x0>x1)continue;/* nome da cidade ao entrar já é mostrado no HUD */}}
  // iluminação
  const sx=(P.px+.5)*ts+ox,sy=(P.py+.5)*ts+oy;
- if(l>=1&&!inHome()){const gr=ctx.createRadialGradient(sx,sy,ts*1.2,sx,sy,ts*(l>=2?6.6:8.5));gr.addColorStop(0,'rgba(6,4,12,.12)');gr.addColorStop(.5,'rgba(6,4,12,.62)');gr.addColorStop(1,'rgba(4,2,8,.93)');ctx.fillStyle=gr;ctx.fillRect(0,0,cw,ch)}
+ if(l>=1&&!inHome()){const gr=ctx.createRadialGradient(sx,sy,ts*1.2,sx,sy,ts*(l===4?9.5:l>=2?6.6:8.5));gr.addColorStop(0,'rgba(6,4,12,.12)');gr.addColorStop(.5,'rgba(6,4,12,.62)');gr.addColorStop(1,'rgba(4,2,8,.93)');ctx.fillStyle=gr;ctx.fillRect(0,0,cw,ch)}
  else{const nt=nightAmt();if(nt>.02){const gr=ctx.createRadialGradient(sx,sy,ts*1.5,sx,sy,ts*9);gr.addColorStop(0,'rgba(8,12,44,'+(nt*.35)+')');gr.addColorStop(1,'rgba(6,10,40,'+nt+')');ctx.fillStyle=gr;ctx.fillRect(0,0,cw,ch)}
   const sun=Math.sin(((T/DAYLEN+DAYSTART)%1-.25)*PI2),wm=clamp(1-Math.abs(sun)/.3,0,1)*.14;if(wm>.01){ctx.fillStyle='rgba(255,130,50,'+wm+')';ctx.fillRect(0,0,cw,ch)}}
  if(!OPT.eco){drawAmbient(ts);drawWeather(ts,sx,sy)}
@@ -6226,6 +6226,120 @@ const _plateHc=plate;plate=function(e,ts,ox,oy){if(e.type==='mon'&&e.spawn&&e.sp
 // marcadores
 const _stTgHc=stairTargets;stairTargets=function(){const o=_stTgHc();try{if(P&&P.layer===0&&world.hcamps&&P.cnt&&P.cnt.hc)for(const c of HC){const h=P.cnt.hc[c.idx];if(!h||!h.f)continue;const st=hcStage(c);o.push([c.x,c.y,st<0?'campx':'camp',c.name+' · nv ~'+c.lvl+' · '+(st<0?'destruído':HCN[st])])}}catch(e){}return o};
 
+// ===== Fendas planares: portais que abrem em locais aleatórios por 5 min reais, levando a um mini-mundo de minibiomas com monstros nível +250 =====
+Object.assign(O,{RIFTP:134,RIFTX:135});[134,135].forEach(o=>{MARG[o]=10;OBJWALK.add(o)});
+const RFDUR=300000,RFADD=250,RFMIN=100,RFC={x:560,y:560};
+const RF={on:false,next:0,end:0,L:0,px:0,py:0,world:null,ch:[],exit:null,w1:0,sp:[]};
+const rfR=(a,b)=>a+Math.random()*(b-a),rfI=(a,b)=>Math.floor(a+Math.random()*(b-a+1)),rfPick=a=>a[Math.floor(Math.random()*a.length)];
+const RFTH=[{n:'Gruta Glacial',g:G.CAVEICE,t:1,el:'ice'},{n:'Fornalha Planar',g:G.CAVE,t:2,el:'fire',lava:1},{n:'Pântano Fúngico',g:G.CAVEMOSS,t:4,el:'poison'},{n:'Tumba Sombria',g:G.CAVESAND,t:3,el:'shadow'},{n:'Salão Cristalino',g:G.CAVE,t:0,el:null}];
+Item_rf();function Item_rf(){addItem({id:'essencia_planar',name:'Essência Planar',type:'loot',price:600,icon:'gem',color:[190,120,255]})}
+// ---------- sprites ----------
+const _objSpriteRf=objSprite;objSprite=function(o,v){
+ if(o===O.RIFTP||o===O.RIFTX)return spr('rift'+o,()=>mk(104,124,(g,w,h)=>{const cx=w/2,cy=h-54,ex=o===O.RIFTX;
+  shadow(g,cx,h-10,38,6,.35);
+  const c0=ex?'#6af0ff':'#c070ff',c1=ex?'#2a60d0':'#5a20b0';
+  let gr=g.createRadialGradient(cx,cy,4,cx,cy,52);gr.addColorStop(0,c0+'cc');gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.beginPath();g.ellipse(cx,cy,52,60,0,0,7);g.fill();
+  gr=g.createRadialGradient(cx,cy,2,cx,cy,36);gr.addColorStop(0,'#fff');gr.addColorStop(.3,c0);gr.addColorStop(1,'#10041e');
+  g.fillStyle=gr;g.beginPath();g.ellipse(cx,cy,27,42,0,0,7);g.fill();
+  g.lineCap='round';for(let k=0;k<5;k++){g.strokeStyle='rgba(255,255,255,'+(.55-k*.08)+')';g.lineWidth=2.2-k*.25;g.beginPath();const a0=k*1.3;for(let t=0;t<=1;t+=.06){const a=a0+t*5.2,rr_=(1-t)*24+2;const x=cx+Math.cos(a)*rr_*.66,y=cy+Math.sin(a)*rr_;t?g.lineTo(x,y):g.moveTo(x,y)}g.stroke()}
+  g.strokeStyle=c1;g.lineWidth=5;g.beginPath();g.ellipse(cx,cy,28,43,0,0,7);g.stroke();g.strokeStyle=c0;g.lineWidth=2;g.beginPath();g.ellipse(cx,cy,31,47,0,0,7);g.stroke();
+  g.fillStyle='#fff';for(const[x,y]of[[-34,-30],[36,-12],[-30,22],[30,34],[2,-52]]){g.beginPath();g.arc(cx+x,cy+y,1.7,0,7);g.fill()}}));
+ return _objSpriteRf(o,v)};
+const _sceneGlowRf=sceneGlow;sceneGlow=function(o,x,y,ts){if(o===O.RIFTP||o===O.RIFTX){const f=.34+.12*Math.sin(performance.now()/260+x);return[o===O.RIFTX?'rgba(110,230,255,'+f+')':'rgba(190,100,255,'+f+')',ts*3.6]}return _sceneGlowRf(o,x,y,ts)};
+// ---------- gerar o mini-mundo ----------
+function rfEnsureArrays(){for(const a of['ground','obj','vr','walk'])if(!world[a][4])world[a][4]=new Uint8Array(N);if(!seen[4])seen[4]=new Uint8Array((W>>2)*(H>>2))}
+function rfCands(L,el){const ids=typeof spawnedIds==='function'?spawnedIds():null;
+ const all=Object.values(MON).filter(d=>!d.boss&&!d.passive&&!d.still&&d.dmg>0&&d.hp>0&&d.id!=='dummy'&&d.id!=='sparring'&&(!ids||ids.has(d.id)));
+ all.sort((a,b)=>Math.abs(a.lvl-L)-Math.abs(b.lvl-L));const near=all.slice(0,48),e=el?near.filter(d=>d.el===el):[];return e.length>=2?e:near}
+function rfSpan(){return Math.max(1,expFor(P.lvl+1)-expFor(P.lvl))}
+function rfDef(b,L,boss){const f=Math.max(1,L/b.lvl),key='rf_'+b.id+(boss?'_b':'');
+ const d=Object.assign(Object.create(b),{lvl:L,hp:Math.round(b.hp*f*(boss?1.25:1.1)),dmg:Math.round(b.dmg*f*(boss?1:1.05)),exp:Math.round(b.exp*f),gold:Math.ceil(b.gold*f),armor:Math.floor(L/3),rift:1,_pw:1.2});
+ Object.defineProperty(MON,key,{value:d,enumerable:false,configurable:true,writable:true});
+ d.xcap=Math.min(1,(boss?.3:.08)*rfSpan()/Math.max(1,BAL.X(d)));return key}
+function rfBuild(L){
+ rfEnsureArrays();const g=world.ground[4],o=world.obj[4],v=world.vr[4];g.fill(G.CAVEWALL);o.fill(0);v.fill(0);
+ const th=RFTH.slice().sort(()=>Math.random()-.5).slice(0,4),dirs=[[0,1],[0,-1],[1,0],[-1,0]],ch=[],cx=RFC.x,cy=RFC.y;
+ const carve=(x0,y0,r,gnd)=>{for(let y=Math.floor(y0-r-2);y<=y0+r+2;y++)for(let x=Math.floor(x0-r-2);x<=x0+r+2;x++){if(x<2||y<2||x>=W-2||y>=H-2)continue;const d=Math.hypot(x-x0,y-y0),e=(hash2(x,y,5)-.5)*3.2;if(d<r+e){g[y*W+x]=gnd;}}};
+ carve(cx,cy,11,G.CAVE);
+ dirs.forEach((dr,k)=>{const T=th[k],c={x:cx+dr[0]*40,y:cy+dr[1]*40,th:T,dr,r:15,spawn:[]};ch.push(c);
+  for(let t=8;t<=30;t+=.7)carve(cx+dr[0]*t,cy+dr[1]*t,2.7,G.CAVE);
+  carve(c.x,c.y,15,T.g);
+  for(let y=c.y-17;y<=c.y+17;y++)for(let x=c.x-17;x<=c.x+17;x++){const i=y*W+x,d=Math.hypot(x-c.x,y-c.y);if(g[i]===G.CAVEWALL||d>14)continue;
+   const lane=dr[0]?Math.abs(y-c.y)<=2:Math.abs(x-c.x)<=2;
+   if(T.lava&&!lane&&d>5&&hash2(x,y,9)>.8){g[i]=G.CAVELAVA;continue}
+   if(d<4||lane)continue;const r=Math.random(),t=T.t;
+   if(r<.05){o[i]=O.STALAG;v[i]=t*16+rfI(0,15)}else if(r<.085&&t<=2){o[i]=O.CRYSTAL;v[i]=t*16+rfI(0,15)}else if(r<.13&&t===4){o[i]=O.MUSH;v[i]=rfI(0,15)}else if(r<.11&&t===3){o[i]=O.BONES;v[i]=rfI(0,15)}}});
+ // núcleo
+ for(let y=cy-12;y<=cy+12;y++)for(let x=cx-12;x<=cx+12;x++){const i=y*W+x,d=Math.hypot(x-cx,y-cy);if(g[i]===G.CAVEWALL||d<5||d>10.5||o[i])continue;if(Math.random()<.07){o[i]=O.CRYSTAL;v[i]=rfI(0,15)}}
+ for(let y=cy-4;y<=cy+4;y++)for(let x=cx-4;x<=cx+4;x++){o[y*W+x]=0}
+ // portal de saída (câmara sul)
+ const ec=ch[0],ex={x:ec.x,y:ec.y+9};for(let y=ex.y-3;y<=ex.y+3;y++)for(let x=ex.x-3;x<=ex.x+3;x++)o[y*W+x]=0;o[ex.y*W+ex.x]=O.RIFTX;
+ computeWalk(4);RF.ch=ch;RF.exit=ex;RF.arrive={x:ex.x,y:ex.y-3};
+ // monstros
+ world.spawns=world.spawns.filter(s=>!s.rift);
+ const add=(x,y,key,xm,extra)=>{addSpawn(4,x,y,key);const s=world.spawns[world.spawns.length-1];s.rift=1;s.xm=xm;if(extra)Object.assign(s,extra);return s};
+ ch.forEach((c,k)=>{const cand=rfCands(L,c.th.el),a=rfPick(cand);let b=rfPick(cand);if(b===a&&cand.length>1)b=cand.find(q=>q!==a);
+  const ka=rfDef(a,L),kb=rfDef(b,L),xa=MON[ka].xcap,xb=MON[kb].xcap,n=k===0?5:9;c.keys=[ka,kb];
+  let tries=0,cnt=0;while(cnt<n&&tries++<400){const x=c.x+rfI(-13,13),y=c.y+rfI(-13,13),i=y*W+x;if(!world.walk[4][i]||o[i]||Math.hypot(x-c.x,y-c.y)>13||Math.hypot(x-c.x,y-c.y)<4)continue;
+   if(k===0&&Math.hypot(x-ex.x,y-ex.y)<10)continue;if(world.spawns.some(s=>s.rift&&Math.hypot(s.x-x,s.y-y)<3))continue;
+   const key=Math.random()<.5?ka:kb,xm=key===ka?xa:xb;add(x,y,key,xm);cnt++;if(Math.random()<.4){const x2=x+rfI(-1,1),y2=y+rfI(-1,1);if(world.walk[4][y2*W+x2]&&!o[y2*W+x2]&&(x2!==x||y2!==y)){add(x2,y2,key,xm)}}}});
+ {const cand=rfCands(L,null),a=rfPick(cand),ka=rfDef(a,L),xa=MON[ka].xcap;let n=0,t=0;while(n<6&&t++<300){const ang=Math.random()*7,rd=rfR(6,10),x=Math.round(cx+Math.cos(ang)*rd),y=Math.round(cy+Math.sin(ang)*rd),i=y*W+x;if(!world.walk[4][i]||o[i])continue;add(x,y,ka,xa);n++}}
+ // guardião
+ const bl=Object.keys(BOSSK).map(k=>MON[k]).filter(d=>d&&d.boss&&!d.fest).sort((a,b)=>Math.abs(a.lvl-L)-Math.abs(b.lvl-L)).slice(0,5);
+ const bk=rfDef(rfPick(bl),L,true);add(cx,cy,bk,MON[bk].xcap,{riftBoss:1});
+ rebuildSpawnGrid();world.ov[4]=null;known[4]=null;seen[4].fill(0)}
+// ---------- abrir / fechar ----------
+function rfSpot(){const ref=P,c=contOf(P.x,P.y);
+ for(let t=0;t<500;t++){const a=Math.random()*7,d=rfR(26,90),x=Math.round(ref.x+Math.cos(a)*d),y=Math.round(ref.y+Math.sin(a)*d);if(x<24||y<24||x>=W-24||y>=H-24)continue;
+  const i=y*W+x;if(!world.walk[0][i]||world.obj[0][i]||world.safe[i]||contOf(x,y)!==c)continue;
+  let ok=true;for(let dy=-1;dy<=1&&ok;dy++)for(let dx=-1;dx<=1;dx++)if(!world.walk[0][(y+dy)*W+x+dx]||world.obj[0][(y+dy)*W+x+dx]){ok=false;break}
+  if(ok&&!world.cities.some(q=>x>=q.rect.x0-6&&x<=q.rect.x1+6&&y>=q.rect.y0-6&&y<=q.rect.y1+6))return[x,y]}return null}
+function rfMMSS(ms){const s=Math.max(0,Math.ceil(ms/1000));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+function riftOpen(){const sp=rfSpot();if(!sp){RF.next=Date.now()+20000;return}
+ const L=P.lvl+RFADD;RF.L=L;rfBuild(L);RF.on=true;RF.world=world;RF.end=Date.now()+RFDUR;RF.px=sp[0];RF.py=sp[1];RF.w1=0;
+ const i=sp[1]*W+sp[0];RF.ow=world.walk[0][i];world.obj[0][i]=O.RIFTP;world.walk[0][i]=1;
+ const dx=sp[0]-P.x,dy=sp[1]-P.y,dd=Math.round(Math.hypot(dx,dy));
+ try{sfx('lvl')}catch(e){}toast('🌀 Fenda planar aberta!',dirName(dx,dy)+' · '+dd+' tiles · fecha em 5:00');
+ log('Uma fenda planar se abriu a '+dirName(dx,dy)+' (~'+dd+' tiles)! Do outro lado, monstros de nível '+L+' (+'+RFADD+' acima de você). Ela se fecha em 5 minutos.','warn')}
+function riftClose(expired){if(!RF.on)return;RF.on=false;
+ if(RF.world===world){world.obj[0][RF.py*W+RF.px]=0;world.walk[0][RF.py*W+RF.px]=RF.ow;
+  for(const m of monsters.slice())if(m.spawn&&m.spawn.rift)despawn(m);
+  world.spawns=world.spawns.filter(s=>!s.rift);rebuildSpawnGrid();
+  if(P.layer===4){const[x,y]=freeNear(0,RF.px,RF.py+1,true);teleport(0,x,y);log('A fenda colapsou e expulsou você de volta ao mundo!','warn')}
+  telegraphs.length=0;projs.length=0}
+ if(expired&&P&&P.layer===0)toast('🌀 A fenda se fechou','Outra surgirá em breve...');
+ RF.next=Date.now()+rfR(10,18)*60000;const h=document.getElementById('riftHud');if(h)h.style.display='none'}
+function riftEnter(){if(!RF.on||P.layer!==0||P.lvl<RFMIN)return;RF.ret={x:P.x,y:P.y};const[x,y]=freeNear(4,RF.arrive.x,RF.arrive.y,true);teleport(4,x,y);
+ log('Você atravessou a fenda planar. Monstros de nível '+RF.L+'! O guardião aguarda no núcleo. A fenda fecha em '+rfMMSS(RF.end-Date.now())+'.','warn')}
+function riftLeave(){if(P.layer!==4)return;const[x,y]=freeNear(0,RF.px,RF.py+1,true);teleport(0,x,y);log('Você retornou da fenda planar.','info')}
+function riftAsk(){if(document.getElementById('riftask')||P.dead)return;if(P.lvl<RFMIN){toast('🌀 Fenda planar','Requer nível '+RFMIN);log('A fenda repele você: é preciso nível '+RFMIN+' para atravessá-la.','warn');return}const d=document.createElement('div');d.id='riftask';d.style.cssText='position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);padding:16px';
+ d.innerHTML='<div style="max-width:340px;background:#1a1228;border:2px solid #a06cff;border-radius:14px;padding:18px;color:#f0e8ff;text-align:center;font:15px system-ui"><div style="font-size:20px;font-weight:700;margin-bottom:8px">🌀 Fenda Planar</div><div id="rkTx" style="line-height:1.45"></div><div style="display:flex;gap:10px;margin-top:14px"><button id="rkNo" style="flex:1;padding:12px;border-radius:10px;border:1px solid #666;background:#2a2238;color:#fff;font-size:15px">Ficar</button><button id="rkYes" style="flex:1;padding:12px;border-radius:10px;border:0;background:#8a4cff;color:#fff;font-weight:700;font-size:15px">Entrar</button></div></div>';
+ document.body.appendChild(d);d.querySelector('#rkTx').innerHTML='Os monstros do outro lado têm <b>nível '+RF.L+'</b> (+'+RFADD+' acima do seu).<br>Fecha em <b>'+rfMMSS(RF.end-Date.now())+'</b>. Um guardião poderoso vigia o núcleo.<br><small>A saída fica na câmara de entrada.</small>';
+ d.querySelector('#rkNo').onclick=()=>d.remove();d.querySelector('#rkYes').onclick=()=>{d.remove();riftEnter()}}
+const _oaRf=onArrive;onArrive=function(){_oaRf();try{if(!RF.on)return;const o=world.obj[P.layer][P.y*W+P.x];if(o===O.RIFTP&&P.layer===0)riftAsk();else if(o===O.RIFTX&&P.layer===4)riftLeave()}catch(e){console.error('rfarr',e)}};
+function rfTick(){if(!P||!world||!P.cnt)return;const now=Date.now();
+ if(RF.on&&RF.world!==world){RF.on=false;RF.next=now+rfR(150,270)*1000}
+ let h=document.getElementById('riftHud');
+ if(!RF.on){if(h)h.style.display='none';if(!RF.next)RF.next=now+rfR(150,270)*1000;if(now>=RF.next&&P.layer===0&&!P.dead&&!inHome()&&P.lvl>=RFMIN)riftOpen();return}
+ const left=RF.end-now;
+ if(!h){h=document.createElement('div');h.id='riftHud';h.style.cssText='position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 52px);z-index:60;background:rgba(26,18,40,.88);border:1px solid #a06cff;border-radius:12px;padding:3px 12px;color:#e8d8ff;font:700 13px system-ui;pointer-events:none;white-space:nowrap';document.body.appendChild(h)}
+ h.style.display='block';h.textContent='🌀 Fenda planar · '+rfMMSS(left);
+ if(!RF.w1&&left<=60000){RF.w1=1;toast('🌀 A fenda se fecha em 1 minuto!',P.layer===4?'Volte pela saída!':'Corra!');log('A fenda planar se fecha em 1 minuto!','warn')}
+ if(left<=0)riftClose(true)}
+setInterval(()=>{try{rfTick()}catch(e){console.error('rift',e)}},500);
+// ---------- recompensas ----------
+const _killMonRf=killMon;killMon=function(m){const sp=m&&m.spawn,rf=sp&&sp.rift,bs=sp&&sp.riftBoss,d=m&&m.def;_killMonRf(m);if(!rf)return;
+ try{const got=[];if(bs){const L=RF.L||d.lvl,g=Math.round(L*L*.5);P.gold+=g;got.push(fmt(g)+' de ouro extra');const pd={lvl:Math.min(L,900),boss:true};dropEquip(pd,got);dropEquip(pd,got);dropEquip(pd,got);matDrops(pd).forEach(x=>got.push(x));matDrops(pd).forEach(x=>got.push(x));
+   if(giveItem('essencia_planar',3))got.push('3x Essência Planar');toast('🌀 Guardião da Fenda derrotado!','+'+fmt(g)+' ouro');burst(P.px,P.py-.4,'#c080ff',30)}
+  else if(Math.random()<.35&&giveItem('essencia_planar',1))got.push('Essência Planar');
+  if(got.length)log('Fenda planar: '+got.join(', ')+'.','loot');refreshUI()}catch(e){console.error('rfkill',e)}};
+// ---------- UI / marcadores ----------
+const _zoneNameRf=zoneName;zoneName=function(){if(P.layer===4&&RF.ch.length){let b=null,bd=1e9;for(const c of RF.ch){const d=Math.hypot(P.x-c.x,P.y-c.y);if(d<bd){bd=d;b=c}}
+  const hd=Math.hypot(P.x-RFC.x,P.y-RFC.y);return{n:'Fenda Planar · '+(hd<13?'Núcleo':b.th.n),s:'Plano instável · nv '+RF.L}}return _zoneNameRf()};
+const _evTgRf=evTargets;evTargets=function(){const o=_evTgRf();if(RF.on&&P&&P.layer===0)o.push([RF.px,RF.py,'boss','Fenda planar · '+rfMMSS(RF.end-Date.now())]);return o};
+const _stTgRf=stairTargets;stairTargets=function(){const o=_stTgRf();if(RF.on&&P&&P.layer===4&&RF.exit)o.push([RF.exit.x,RF.exit.y,'out','Saída da fenda · '+rfMMSS(RF.end-Date.now())]);return o};
+const _sgRf=saveGame;saveGame=function(){if(P&&P.layer===4&&RF.on){const l=P.layer,x=P.x,y=P.y;P.layer=0;P.x=RF.px;P.y=RF.py+1;try{return _sgRf()}finally{P.layer=l;P.x=x;P.y=y}}return _sgRf()};
+
 // ===== INTERFACE =====
 const $=id=>document.getElementById(id);
 const el=(tag,cls,html)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(html!==undefined)e.innerHTML=html;return e};
@@ -6310,7 +6424,7 @@ function drawMap(){const c=$('mapc'),S=c.width,VH=P.layer?H:MAPVH;if(c.height!==
   homeMarksMap(g,k);for(const p of world.pois){if(!p.found)continue;g.fillStyle='#7af0ff';g.beginPath();g.moveTo(p.x*k,p.y*k-6);g.lineTo(p.x*k+5,p.y*k+4);g.lineTo(p.x*k-5,p.y*k+4);g.fill();g.font='600 11px system-ui';g.strokeText(p.name,p.x*k,p.y*k-9);g.fillStyle='#cfe';g.fillText(p.name,p.x*k,p.y*k-9)}
   for(const e of world.entrances){if(!e.found)continue;g.fillStyle='#1a1018';g.strokeStyle='#e0b050';g.lineWidth=2;g.beginPath();g.arc(e.x*k,e.y*k,4,0,PI2);g.fill();g.stroke();g.lineWidth=3;g.strokeStyle='rgba(0,0,0,.85)'}}
  mapPin(g,P.x*k,P.y*k,c.clientWidth?c.width/c.clientWidth:1);
- $('maptitle').textContent=P.layer>=2?'Mapa da masmorra':P.layer?'Mapa das cavernas':'Mapa-múndi de Aldora'}
+ $('maptitle').textContent=P.layer===4?'Mapa da fenda planar':P.layer>=2?'Mapa da masmorra':P.layer?'Mapa das cavernas':'Mapa-múndi de Aldora'}
 // ---------- painel lateral ----------
 function togglePanel(t){panelTab=(t&&panelTab===t)?null:t;$('panel').hidden=!panelTab;document.querySelectorAll('#menu button[data-p],#more button[data-p]').forEach(b=>b.classList.toggle('on',b.dataset.p===panelTab));if(panelTab)renderPanel()}
 function refreshUI(){if(!P)return;if(panelTab)renderPanel();refreshBar();if(curNpc&&!$('dlg').hidden)dlgRefresh&&dlgRefresh()}
