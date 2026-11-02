@@ -6228,7 +6228,7 @@ const _stTgHc=stairTargets;stairTargets=function(){const o=_stTgHc();try{if(P&&P
 
 // ===== Fendas planares: portais que abrem em locais aleatórios por 5 min reais, levando a um mini-mundo de minibiomas com monstros nível +250 =====
 Object.assign(O,{RIFTP:134,RIFTX:135});[134,135].forEach(o=>{MARG[o]=10;OBJWALK.add(o)});
-const RFDUR=300000,RFADD=250,RFMIN=100,RFC={x:560,y:560};
+const RFDUR=300000,RFADD=250,RFBADD=350,RFMIN=100,RFC={x:560,y:560};
 const RF={on:false,next:0,end:0,L:0,px:0,py:0,world:null,ch:[],exit:null,w1:0,sp:[]};
 const rfR=(a,b)=>a+Math.random()*(b-a),rfI=(a,b)=>Math.floor(a+Math.random()*(b-a+1)),rfPick=a=>a[Math.floor(Math.random()*a.length)];
 const RFTH=[{n:'Gruta Glacial',g:G.CAVEICE,t:1,el:'ice'},{n:'Fornalha Planar',g:G.CAVE,t:2,el:'fire',lava:1},{n:'Pântano Fúngico',g:G.CAVEMOSS,t:4,el:'poison'},{n:'Tumba Sombria',g:G.CAVESAND,t:3,el:'shadow'},{n:'Salão Cristalino',g:G.CAVE,t:0,el:null}];
@@ -6285,8 +6285,8 @@ function rfBuild(L){
    const key=Math.random()<.5?ka:kb,xm=key===ka?xa:xb;add(x,y,key,xm);cnt++;if(Math.random()<.4){const x2=x+rfI(-1,1),y2=y+rfI(-1,1);if(world.walk[4][y2*W+x2]&&!o[y2*W+x2]&&(x2!==x||y2!==y)){add(x2,y2,key,xm)}}}});
  {const cand=rfCands(L,null),a=rfPick(cand),ka=rfDef(a,L),xa=MON[ka].xcap;let n=0,t=0;while(n<6&&t++<300){const ang=Math.random()*7,rd=rfR(6,10),x=Math.round(cx+Math.cos(ang)*rd),y=Math.round(cy+Math.sin(ang)*rd),i=y*W+x;if(!world.walk[4][i]||o[i])continue;add(x,y,ka,xa);n++}}
  // guardião
- const bl=Object.keys(BOSSK).map(k=>MON[k]).filter(d=>d&&d.boss&&!d.fest).sort((a,b)=>Math.abs(a.lvl-L)-Math.abs(b.lvl-L)).slice(0,5);
- const bk=rfDef(rfPick(bl),L,true);add(cx,cy,bk,MON[bk].xcap,{riftBoss:1});
+ const LB=L+(RFBADD-RFADD),bl=Object.keys(BOSSK).map(k=>MON[k]).filter(d=>d&&d.boss&&!d.fest).sort((a,b)=>Math.abs(a.lvl-LB)-Math.abs(b.lvl-LB)).slice(0,5);
+ const bk=rfDef(rfPick(bl),L+(RFBADD-RFADD),true);add(cx,cy,bk,MON[bk].xcap,{riftBoss:1});
  rebuildSpawnGrid();world.ov[4]=null;known[4]=null;seen[4].fill(0)}
 // ---------- abrir / fechar ----------
 function rfSpot(){const ref=P,c=contOf(P.x,P.y);
@@ -6310,11 +6310,11 @@ function riftClose(expired){if(!RF.on)return;RF.on=false;
  if(expired&&P&&P.layer===0)toast('🌀 A fenda se fechou','Outra surgirá em breve...');
  RF.next=Date.now()+rfR(10,18)*60000;const h=document.getElementById('riftHud');if(h)h.style.display='none'}
 function riftEnter(){if(!RF.on||P.layer!==0||P.lvl<RFMIN)return;RF.ret={x:P.x,y:P.y};const[x,y]=freeNear(4,RF.arrive.x,RF.arrive.y,true);teleport(4,x,y);
- log('Você atravessou a fenda planar. Monstros de nível '+RF.L+'! O guardião aguarda no núcleo. A fenda fecha em '+rfMMSS(RF.end-Date.now())+'.','warn')}
+ log('Você atravessou a fenda planar. Monstros de nível '+RF.L+'! O guardião (nível '+(RF.L+RFBADD-RFADD)+') aguarda no núcleo. A fenda fecha em '+rfMMSS(RF.end-Date.now())+'.','warn')}
 function riftLeave(){if(P.layer!==4)return;const[x,y]=freeNear(0,RF.px,RF.py+1,true);teleport(0,x,y);log('Você retornou da fenda planar.','info')}
 function riftAsk(){if(document.getElementById('riftask')||P.dead)return;if(P.lvl<RFMIN){toast('🌀 Fenda planar','Requer nível '+RFMIN);log('A fenda repele você: é preciso nível '+RFMIN+' para atravessá-la.','warn');return}const d=document.createElement('div');d.id='riftask';d.style.cssText='position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);padding:16px';
  d.innerHTML='<div style="max-width:340px;background:#1a1228;border:2px solid #a06cff;border-radius:14px;padding:18px;color:#f0e8ff;text-align:center;font:15px system-ui"><div style="font-size:20px;font-weight:700;margin-bottom:8px">🌀 Fenda Planar</div><div id="rkTx" style="line-height:1.45"></div><div style="display:flex;gap:10px;margin-top:14px"><button id="rkNo" style="flex:1;padding:12px;border-radius:10px;border:1px solid #666;background:#2a2238;color:#fff;font-size:15px">Ficar</button><button id="rkYes" style="flex:1;padding:12px;border-radius:10px;border:0;background:#8a4cff;color:#fff;font-weight:700;font-size:15px">Entrar</button></div></div>';
- document.body.appendChild(d);d.querySelector('#rkTx').innerHTML='Os monstros do outro lado têm <b>nível '+RF.L+'</b> (+'+RFADD+' acima do seu).<br>Fecha em <b>'+rfMMSS(RF.end-Date.now())+'</b>. Um guardião poderoso vigia o núcleo.<br><small>A saída fica na câmara de entrada.</small>';
+ document.body.appendChild(d);d.querySelector('#rkTx').innerHTML='Os monstros do outro lado têm <b>nível '+RF.L+'</b> (+'+RFADD+' acima do seu).<br>Fecha em <b>'+rfMMSS(RF.end-Date.now())+'</b>. O guardião do núcleo é nível <b>'+(RF.L+RFBADD-RFADD)+'</b> (+'+RFBADD+').<br><small>A saída fica na câmara de entrada.</small>';
  d.querySelector('#rkNo').onclick=()=>d.remove();d.querySelector('#rkYes').onclick=()=>{d.remove();riftEnter()}}
 const _oaRf=onArrive;onArrive=function(){_oaRf();try{if(!RF.on)return;const o=world.obj[P.layer][P.y*W+P.x];if(o===O.RIFTP&&P.layer===0)riftAsk();else if(o===O.RIFTX&&P.layer===4)riftLeave()}catch(e){console.error('rfarr',e)}};
 function rfTick(){if(!P||!world||!P.cnt)return;const now=Date.now();
@@ -6322,14 +6322,14 @@ function rfTick(){if(!P||!world||!P.cnt)return;const now=Date.now();
  let h=document.getElementById('riftHud');
  if(!RF.on){if(h)h.style.display='none';if(!RF.next)RF.next=now+rfR(150,270)*1000;if(now>=RF.next&&P.layer===0&&!P.dead&&!inHome()&&P.lvl>=RFMIN)riftOpen();return}
  const left=RF.end-now;
- if(!h){h=document.createElement('div');h.id='riftHud';h.style.cssText='position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 52px);z-index:60;background:rgba(26,18,40,.88);border:1px solid #a06cff;border-radius:12px;padding:3px 12px;color:#e8d8ff;font:700 13px system-ui;pointer-events:none;white-space:nowrap';document.body.appendChild(h)}
+ if(!h){h=document.createElement('div');h.id='riftHud';h.style.cssText='position:fixed;left:12px;top:calc(env(safe-area-inset-top,0px) + 156px);z-index:60;background:rgba(26,18,40,.88);border:1px solid #a06cff;border-radius:12px;padding:3px 12px;color:#e8d8ff;font:700 13px system-ui;pointer-events:none;white-space:nowrap';document.body.appendChild(h)}
  h.style.display='block';h.textContent='🌀 Fenda planar · '+rfMMSS(left);
  if(!RF.w1&&left<=60000){RF.w1=1;toast('🌀 A fenda se fecha em 1 minuto!',P.layer===4?'Volte pela saída!':'Corra!');log('A fenda planar se fecha em 1 minuto!','warn')}
  if(left<=0)riftClose(true)}
 setInterval(()=>{try{rfTick()}catch(e){console.error('rift',e)}},500);
 // ---------- recompensas ----------
 const _killMonRf=killMon;killMon=function(m){const sp=m&&m.spawn,rf=sp&&sp.rift,bs=sp&&sp.riftBoss,d=m&&m.def;_killMonRf(m);if(!rf)return;
- try{const got=[];if(bs){const L=RF.L||d.lvl,g=Math.round(L*L*.5);P.gold+=g;got.push(fmt(g)+' de ouro extra');const pd={lvl:Math.min(L,900),boss:true};dropEquip(pd,got);dropEquip(pd,got);dropEquip(pd,got);matDrops(pd).forEach(x=>got.push(x));matDrops(pd).forEach(x=>got.push(x));
+ try{const got=[];if(bs){const L=d.lvl,g=Math.round(L*L*.5);P.gold+=g;got.push(fmt(g)+' de ouro extra');const pd={lvl:Math.min(L,900),boss:true};dropEquip(pd,got);dropEquip(pd,got);dropEquip(pd,got);matDrops(pd).forEach(x=>got.push(x));matDrops(pd).forEach(x=>got.push(x));
    if(giveItem('essencia_planar',3))got.push('3x Essência Planar');toast('🌀 Guardião da Fenda derrotado!','+'+fmt(g)+' ouro');burst(P.px,P.py-.4,'#c080ff',30)}
   else if(Math.random()<.35&&giveItem('essencia_planar',1))got.push('Essência Planar');
   if(got.length)log('Fenda planar: '+got.join(', ')+'.','loot');refreshUI()}catch(e){console.error('rfkill',e)}};
