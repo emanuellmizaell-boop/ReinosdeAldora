@@ -5738,7 +5738,7 @@ function buildStable(c,a){const g0=world.ground[0],base=baseGround(c.biome),pt=(
  const spot={x:a.x,y:a.y+1};
  if(n&&c.id!=='portus'){n.x=spot.x;n.y=spot.y;n.wander=false;n.title='Cocheiro';const st=world.structs.find(s=>s.kind==='room'&&s.role==='travel'&&s.city===c.idx);if(st)st.label='Depósito'}
  else world.npcs.push({id:c.id+'_stable',city:c.idx,role:'travel',name:NAMES1[Math.floor(hash2(c.idx,88,5)*NAMES1.length)],title:'Cocheiro',x:spot.x,y:spot.y,wander:false,look:{}});
- world.stables.push({city:c.idx,x:a.x,y:a.y,mounts:[{k:'horse0',dx:-5,dy:0.35,f:1},{k:'horse1',dx:-3,dy:0.35,f:-1},{k:'horse2',dx:-5,dy:2.1,f:1},{k:'horse3',dx:-3,dy:2.1,f:-1},{k:'grif0',dx:-7,dy:0.35,f:1},{k:'grif1',dx:-9,dy:0.35,f:-1},{k:'grif2',dx:-7,dy:2.1,f:1},{k:'grif3',dx:-9,dy:2.1,f:-1}]})}
+ world.stables.push({city:c.idx,x:a.x,y:a.y,mounts:[{k:'horse2',dx:-5,dy:0.35,f:1},{k:'horse3',dx:-3,dy:0.35,f:-1},{k:'grif2',dx:-5,dy:2.1,f:1},{k:'grif3',dx:-3,dy:2.1,f:-1}]})}
 function stageStable(){world.stables=[];world.cities.forEach(c=>{if(!c.rect)return;const a=stableSite(c);if(a)buildStable(c,a)});computeWalk(0);makeDeco()}
 function makeDeco(){decoAll=[];let id=-200;for(const s of world.stables||[])for(const m of s.mounts){const md=MOUNTS[m.k],def=md&&MON[md.mon];if(!def)continue;const X=s.x+m.dx,Y=s.y+m.dy;
  decoAll.push({type:'mon',deco:1,def,id:id--,hp:1,maxhp:1,l:0,x:Math.round(X),y:Math.round(Y),px:X,py:Y,ox:X,oy:Y,moveT:1,dur:1,face:m.f,seed:m.dx*3.7+m.dy*1.3,moving:false,sp:0,atkT:0,hitT:0,scale:md.sc,name:''})}}
