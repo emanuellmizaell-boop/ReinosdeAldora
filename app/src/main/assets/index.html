@@ -4728,13 +4728,11 @@ function drawWeather(ts,sx,sy){
  ctx.restore()}
 
 // ===== COMPANHEIROS (pets) E MONTARIAS =====
+// Companheiro: Águia (aprimora uma única vez para Águia de Fogo). Os pets antigos foram aposentados (reembolso em ouro).
 const PETS={
- wolf:{n:'Lobinho',mon:'wolf',el:null,lvl:5,price:1500,mul:.22,pas:'Ataque físico equilibrado'},
- frog:{n:'Sapinho Tóxico',mon:'frog',el:'poison',lvl:20,price:12000,mul:.2,st:{k:'poison',dur:4,pct:.15},pas:'Envenena os alvos'},
- polarbear:{n:'Ursinho Polar',mon:'polarbear',el:'ice',lvl:60,price:90000,mul:.22,st:{k:'slow',dur:2.5,pct:0},pas:'Retarda os alvos'},
- hellhound:{n:'Cãozinho Infernal',mon:'hellhound',el:'fire',lvl:120,price:400000,mul:.26,st:{k:'burn',dur:4,pct:.1},pas:'Queima os alvos'},
- sylph:{n:'Silfo Sagrado',mon:'sylph',el:'holy',lvl:200,price:1500000,mul:.14,heal:.02,pas:'Cura 2% da sua vida a cada 6s'},
- panther:{n:'Pantera Sombria',mon:'panther',el:'shadow',lvl:350,price:5000000,mul:.24,crit:.2,pas:'20% de chance de golpe duplo'}};
+ eagle0:{n:'Águia',mon:'eagle0',el:null,lvl:40,price:45000,mul:.12,cd:.9,sc:.85,crit:.08,rng:11,pas:'Olhar de Águia: ataca bem mais rápido que os outros pets e de mais longe'},
+ eagle1:{n:'Águia de Fogo',mon:'eagle1',el:'fire',lvl:150,price:350000,mul:.15,cd:.8,sc:.9,crit:.15,rng:12,st:{k:'burn',dur:4,pct:.1},pas:'Plumagem Flamejante: ataques rápidos, críticos frequentes e queima os alvos'}};
+const PET_IDS=['eagle0','eagle1'],PETS_OLD={wolf:1500,frog:12000,polarbear:90000,hellhound:400000,sylph:1500000,panther:5000000};
 // Montaria única que evolui: cavalo pardo -> gelo -> veneno -> fogo (o jogador possui apenas um estágio por vez)
 const MOUNTS={
  horse0:{n:'Cavalo Pardo',mon:'horse0',lvl:1,price:20000,spd:5,sc:1.2,rl:.42},
@@ -4750,7 +4748,7 @@ function mntView(){try{const v=heroView();return v==='f'||v==='b'?v:'s'}catch(_)
 function mntTier(L){L=L||MNT_LINES[0];if(!P||!P.mnts)return -1;for(let i=L.ids.length-1;i>=0;i--)if(P.mnts.own[L.ids[i]])return i;return -1}
 const PET_XP=[0,25,70,150,280,480,780,1250,2000,3200];
 let petEnt=null;
-function petFix(){if(!P)return;if(!P.pets)P.pets={own:{},act:null};if(!P.mnts||typeof P.mnts!=='object')P.mnts={own:{},act:null};if(!P.mnts.own)P.mnts.own={};{let ref=0;for(const k of Object.keys(MNT_OLD))if(P.mnts.own[k]){ref+=MNT_OLD[k];delete P.mnts.own[k]}if(ref>0){P.gold=(P.gold||0)+ref;P.mnts.act=null;P.mounted=false;try{log('As montarias antigas foram aposentadas. Você recebeu '+fmt(ref)+' de ouro de volta. Procure o Cocheiro para comprar o novo Cavalo.','quest')}catch(_){}}}if(P.mnts.act&&!MOUNTS[P.mnts.act])P.mnts.act=null;if(P.mounted===undefined||!P.mnts.act)P.mounted=false}
+function petFix(){if(!P)return;if(!P.pets)P.pets={own:{},act:null};if(!P.pets.own)P.pets.own={};{let rf=0;for(const k of Object.keys(PETS_OLD))if(P.pets.own[k]){rf+=PETS_OLD[k];delete P.pets.own[k]}if(rf>0){P.gold=(P.gold||0)+rf;P.pets.act=null;try{log('Os companheiros antigos foram aposentados. Você recebeu '+fmt(rf)+' de ouro de volta. Procure o Cocheiro para adotar a Águia.','quest')}catch(_){}}if(P.pets.act&&!PETS[P.pets.act])P.pets.act=null}if(!P.mnts||typeof P.mnts!=='object')P.mnts={own:{},act:null};if(!P.mnts.own)P.mnts.own={};{let ref=0;for(const k of Object.keys(MNT_OLD))if(P.mnts.own[k]){ref+=MNT_OLD[k];delete P.mnts.own[k]}if(ref>0){P.gold=(P.gold||0)+ref;P.mnts.act=null;P.mounted=false;try{log('As montarias antigas foram aposentadas. Você recebeu '+fmt(ref)+' de ouro de volta. Procure o Cocheiro para comprar o novo Cavalo.','quest')}catch(_){}}}if(P.mnts.act&&!MOUNTS[P.mnts.act])P.mnts.act=null;if(P.mounted===undefined||!P.mnts.act)P.mounted=false}
 function petLv(id){id=id||(P.pets&&P.pets.act);const o=id&&P.pets.own[id];return o?PET_XP.filter(x=>o.xp>=x).length:0}
 function mountF(){return P&&P.mounted&&P.mnts&&P.mnts.act&&MOUNTS[P.mnts.act]?1-MOUNTS[P.mnts.act].spd/100:1}
 function isMounted(){return !!(P&&P.mounted&&P.mnts&&P.mnts.act&&MOUNTS[P.mnts.act])}
@@ -4760,7 +4758,7 @@ function toggleMount(){if(!P||P.dead)return;petFix();P.path=null;P.moving=false;
 function petSync(){const a=P.pets&&P.pets.act&&PETS[P.pets.act]&&P.pets.own[P.pets.act]?P.pets.act:null;
  if(!a||(petEnt&&petEnt.pid!==a)){if(petEnt){const i=activeEnts.indexOf(petEnt);if(i>=0)activeEnts.splice(i,1);petEnt=null}}
  if(!a)return;
- if(!petEnt){const d=MON[PETS[a].mon];if(!d)return;petEnt={type:'mon',pet:true,pid:a,def:d,id:-7,seed:1.7,x:P.x,y:P.y,ox:P.x,oy:P.y,px:P.px-.9,py:P.py,l:P.layer,face:1,moving:false,moveT:0,sp:0,atkT:0,hp:1,maxhp:1,hitT:0,scale:.62,pname:PETS[a].n,cd:1.5,healT:6}}
+ if(!petEnt){const d=MON[PETS[a].mon];if(!d)return;petEnt={type:'mon',pet:true,pid:a,def:d,id:-7,seed:1.7,x:P.x,y:P.y,ox:P.x,oy:P.y,px:P.px-.9,py:P.py,l:P.layer,face:1,moving:false,moveT:0,sp:0,atkT:0,hp:1,maxhp:1,hitT:0,scale:PETS[a].sc||.62,pname:PETS[a].n,cd:1.5,healT:6}}
  if(!activeEnts.includes(petEnt))activeEnts.push(petEnt)}
 function updPet(dt){
  if(!P||P.dead)return;petFix();petSync();const e=petEnt;if(!e)return;
@@ -4776,10 +4774,10 @@ function updPet(dt){
  if(e.atkT>0)e.atkT-=dt;if(e.hitT>0)e.hitT-=dt;e.cd-=dt;
  if(pd.heal){e.healT-=dt;if(e.healT<=0){e.healT=6;if(P.hp<P.maxhp){const h=Math.round(P.maxhp*pd.heal*(1+.1*(lv-1)));P.hp=Math.min(P.maxhp,P.hp+h);float(P,'+'+h,'#80ff90');burst(P.px,P.py-.4,'#fff0a0',6)}}}
  if(e.cd<=0&&!playerSafe()){
-  let t=P.target&&P.target.hp>0&&P.target.l===P.layer&&dist(P.px,P.py,P.target.px,P.target.py)<=9?P.target:null;
+  let t=P.target&&P.target.hp>0&&P.target.l===P.layer&&dist(P.px,P.py,P.target.px,P.target.py)<=(pd.rng||9)?P.target:null;
   if(!t)for(const m of monsters){if(m.l===P.layer&&m.hp>0&&m.chase&&!m.def.passive&&dist(m.px,m.py,P.px,P.py)<=6){t=m;break}}
   if(t){const mul=pd.mul*(1+.1*(lv-1)),crit=pd.crit&&Math.random()<pd.crit,col=pd.el?ELEMS[pd.el].c:'#ffffff';
-   e.cd=1.5;e.atkT=e.atkDur=.3;e.face=t.px>=e.px?1:-1;
+   e.cd=pd.cd||1.5;e.atkT=e.atkDur=.3;e.face=t.px>=e.px?1:-1;
    projs.push({x0:e.px,y0:e.py,x1:t.px,y1:t.py,t:0,dur:.12+dist(e.px,e.py,t.px,t.py)*.04,kind:'orb',col,trail:[],cb:()=>{if(t.hp>0&&!P.dead)hurtMon(t,playerAtk()*mul*(crit?2:1),col,!!crit,pd.el,pd.st)}})}}}
 function petKill(m){if(!P||!P.pets||!P.pets.act||(m.spawn&&m.spawn.minion))return;const o=P.pets.own[P.pets.act];if(!o)return;const a=petLv(P.pets.act);o.xp++;const b=petLv(P.pets.act);
  if(b>a){log(PETS[P.pets.act].n+' subiu para o nível '+b+'!','quest');toast(PETS[P.pets.act].n,'Nível '+b+' do companheiro');if(petEnt)burst(petEnt.px,petEnt.py-.4,'#ffe070',14)}}
@@ -4790,18 +4788,25 @@ function drawMount(ts,ox,oy,T){const mt=MOUNTS[P.mnts.act],me={type:'mon',def:MO
 function mntUpgrade(L){L=L||MNT_LINES[0];petFix();const ids=L.ids,c=mntTier(L);if(c<0||c>=ids.length-1)return;const nx=MOUNTS[ids[c+1]];if(P.gold<nx.price)return;
  const was=P.mnts.act===ids[c]||!P.mnts.act;P.gold-=nx.price;delete P.mnts.own[ids[c]];P.mnts.own[ids[c+1]]=1;if(was)P.mnts.act=ids[c+1];
  log('Sua montaria evoluiu para '+nx.n+'! (+'+nx.spd+'% de velocidade)','quest');try{toast(nx.n,'Montaria aprimorada!');burst(P.px,P.py-.4,'#ffe070',18)}catch(_){}sfx('lvl');updMntBtn();refreshUI();dlgStable()}
+function petUpgrade(){petFix();const o=P.pets.own.eagle0,nx=PETS.eagle1;if(!o||P.pets.own.eagle1||P.gold<nx.price||P.lvl<nx.lvl)return;
+ P.gold-=nx.price;delete P.pets.own.eagle0;P.pets.own.eagle1={xp:o.xp};if(P.pets.act==='eagle0')P.pets.act='eagle1';petEnt=null;
+ log('Sua Águia evoluiu para Águia de Fogo!','quest');try{toast(nx.n,'Companheiro aprimorado!');burst(P.px,P.py-.4,'#ff9a30',22)}catch(_){}sfx('lvl');refreshUI();dlgStable()}
 // ---------- diálogo do estábulo ----------
 function dlgStable(){dlgRefresh=dlgStable;petFix();const b=dlgBody();
  const p=el('p','say');p.textContent='“Companheiros e montarias esperam por você. Cuide bem deles!”';b.appendChild(p);
  const hd=el('div','tabs');hd.innerHTML='<span class="gold">Ouro <b>'+fmt(P.gold)+'</b></span>';b.appendChild(hd);
  const list=el('div','list');b.appendChild(list);
  list.appendChild(el('p','muted','Companheiros lutam ao seu lado e sobem de nível a cada abate (até o nível 10).'));
- Object.keys(PETS).forEach(id=>{const s=PETS[id],own=P.pets.own[id],w=el('div','quest');w.innerHTML='<b></b><small></small><p></p>';
-  w.children[0].textContent=s.n+(own?' · Nv '+petLv(id)+(P.pets.act===id?' (ativo)':''):'');w.children[1].textContent=(s.el?ELEMS[s.el].n+' · ':'')+s.pas;
-  w.children[2].textContent=own?'Abates: '+own.xp:'Requer nível '+s.lvl+' · '+fmt(s.price)+' de ouro';
-  if(!own){const bt=opt(w,'Comprar',()=>{if(P.gold<s.price||P.lvl<s.lvl)return;P.gold-=s.price;P.pets.own[id]={xp:0};if(!P.pets.act)P.pets.act=id;log('Você adotou '+s.n+'!','quest');sfx('coin');refreshUI();dlgStable()},'go');bt.disabled=P.gold<s.price||P.lvl<s.lvl}
-  else opt(w,P.pets.act===id?'Dispensar':'Invocar',()=>{P.pets.act=P.pets.act===id?null:id;dlgStable()},P.pets.act===id?'ghost':'go');
-  list.appendChild(w)});
+ {const own0=P.pets.own.eagle0,own1=P.pets.own.eagle1,cid=own1?'eagle1':'eagle0',s=PETS[cid],own=own1||own0,w=el('div','quest');w.innerHTML='<b></b><small></small><p></p>';
+  try{const cv=document.createElement('canvas');cv.width=cv.height=96;cv.style.cssText='float:right;width:76px;height:76px;margin:0 0 4px 8px';const g=cv.getContext('2d');g.drawImage(entSpriteRaw({type:'mon',def:MON[s.mon]})[0],0,0,160,160,0,0,96,96);w.insertBefore(cv,w.firstChild)}catch(_){}
+  w.querySelector('b').textContent=s.n+(own?' · Nv '+petLv(cid)+(P.pets.act===cid?' (ativa)':''):'');
+  w.querySelector('small').textContent=(s.el?ELEMS[s.el].n+' · ':'')+s.pas;
+  const pp=w.querySelector('p'),nx=PETS.eagle1;
+  if(!own){pp.textContent='Requer nível '+s.lvl+' · '+fmt(s.price)+' de ouro';const bt=opt(w,'Comprar',()=>{if(P.gold<s.price||P.lvl<s.lvl)return;P.gold-=s.price;P.pets.own.eagle0={xp:0};if(!P.pets.act)P.pets.act='eagle0';log('Você adotou '+s.n+'!','quest');sfx('coin');refreshUI();dlgStable()},'go');bt.disabled=P.gold<s.price||P.lvl<s.lvl}
+  else{pp.textContent='Abates: '+own.xp+(own1?' · Evolução máxima alcançada.':' · Aprimoramento: Águia de Fogo, nível '+nx.lvl+', '+fmt(nx.price)+' de ouro');
+   if(!own1){const bt=opt(w,'Aprimorar',petUpgrade,'go');bt.disabled=P.gold<nx.price||P.lvl<nx.lvl}
+   opt(w,P.pets.act===cid?'Dispensar':'Invocar',()=>{P.pets.act=P.pets.act===cid?null:cid;dlgStable()},P.pets.act===cid?'ghost':'go')}
+  list.appendChild(w)}
  list.appendChild(el('p','muted','Sua montaria aumenta a velocidade de movimento e evolui quando aprimorada. Use o botão Montar ou a tecla R.'));
  MNT_LINES.forEach(L=>{const ids=L.ids,cur=mntTier(L),shw=Math.max(0,cur),s0=MOUNTS[ids[shw]],w=el('div','quest');w.innerHTML='<b></b><small></small><p></p>';
   try{const cv=document.createElement('canvas');cv.width=cv.height=96;cv.style.cssText='float:right;width:76px;height:76px;margin:0 0 4px 8px';const g=cv.getContext('2d');g.drawImage(entSpriteRaw({type:'mon',def:MON[s0.mon]})[0],0,0,160,160,0,0,96,96);w.insertBefore(cv,w.firstChild)}catch(_){}
@@ -4818,7 +4823,7 @@ function dlgStable(){dlgRefresh=dlgStable;petFix();const b=dlgBody();
 
 // ===== CONQUISTAS E TÍTULOS =====
 const ACH=[];
-function A(id,name,desc,cur,max,title,gold){ACH.push({id,name,desc,cur,mx:typeof max==='function'?max:()=>max,title:title||null,gold:gold||0})}
+function A(id,name,desc,cur,max,title,gold){ACH.push({id,name,desc,cur,mx:typeof max==='function'?max:()=>max,title:title||null,gold:Math.min(gold||0,1e7)})}
 const nBoss=()=>Object.keys(P.cnt.bossk).length,gmax=k=>{let m=0;for(const id in P.gen||{}){const g=P.gen[id];if(g&&(g[k]||0)>m)m=g[k]||0}return m};
 const qDoneN=()=>QDEF.filter(q=>qDone(q)).length,keysN=o=>Object.keys(o||{}).length;
 [[10,'Aprendiz',500],[50,'Veterano',5000],[100,'Herói',50000],[200,'Campeão',250000],[400,'Lenda Viva',2000000],[700,'Mito',20000000],[900,'Imortal',100000000]].forEach(([l,t,g])=>A('lvl'+l,'Nível '+l,'Alcance o nível '+l+'.',()=>P.lvl,l,t,g));
@@ -4839,7 +4844,7 @@ A('dungall','Mestre das Profundezas','Conclua todas as masmorras.',()=>keysN(P.d
 A('spec','Caminho Escolhido','Escolha uma especialização.',()=>P.spec?1:0,1,null,20000);
 A('pet1','Melhor Amigo','Adote um companheiro.',()=>keysN(P.pets&&P.pets.own),1,null,2000);
 A('petlv','Elo Perfeito','Leve um companheiro ao nível 10.',()=>Math.max(0,...Object.keys(P.pets.own).map(i=>petLv(i))),10,'Mestre de Feras',2000000);
-A('petall','Domador','Adote todos os companheiros.',()=>keysN(P.pets&&P.pets.own),Object.keys(PETS).length,'Domador',20000000);
+A('petall','Domador','Aprimore a Águia para Águia de Fogo.',()=>P.pets&&P.pets.own&&P.pets.own.eagle1?1:0,1,'Domador',20000000);
 A('mnt1','Cavaleiro','Compre o seu cavalo de montaria.',()=>keysN(P.mnts&&P.mnts.own),1,null,5000);
 A('mntall','Estábulo Real','Evolua a montaria até o Cavalo de Fogo.',()=>P.mnts&&P.mnts.own&&P.mnts.own.horse3?1:0,1,'Senhor dos Estábulos',30000000);
 A('grifall','Senhor dos Céus','Evolua o grifo até o Grifo Dourado.',()=>P.mnts&&P.mnts.own&&P.mnts.own.grif3?1:0,1,'Senhor dos Céus',60000000);
@@ -6360,9 +6365,9 @@ const _plateHc=plate;plate=function(e,ts,ox,oy){if(e.type==='mon'&&e.spawn&&e.sp
 // marcadores
 const _stTgHc=stairTargets;stairTargets=function(){const o=_stTgHc();try{if(P&&P.layer===0&&world.hcamps&&P.cnt&&P.cnt.hc)for(const c of HC){const h=P.cnt.hc[c.idx];if(!h||!h.f)continue;const st=hcStage(c);o.push([c.x,c.y,st<0?'campx':'camp',c.name+' · nv ~'+c.lvl+' · '+(st<0?'destruído':HCN[st])])}}catch(e){}return o};
 
-// ===== Fendas planares: portais que abrem em locais aleatórios por 5 min reais, levando a um mini-mundo de minibiomas com monstros nível +250 =====
+// ===== Fendas planares: portais que abrem em locais aleatórios por 5 min reais, levando a um mini-mundo de minibiomas com monstros nível +100 =====
 Object.assign(O,{RIFTP:134,RIFTX:135});[134,135].forEach(o=>{MARG[o]=10;OBJWALK.add(o)});
-const RFDUR=300000,RFADD=250,RFBADD=350,RFMIN=100,RFC={x:560,y:560};
+const RFDUR=300000,RFADD=100,RFBADD=150,RFMIN=100,RFC={x:560,y:560};
 const RF={on:false,next:0,end:0,L:0,px:0,py:0,world:null,ch:[],exit:null,w1:0,sp:[]};
 const rfR=(a,b)=>a+Math.random()*(b-a),rfI=(a,b)=>Math.floor(a+Math.random()*(b-a+1)),rfPick=a=>a[Math.floor(Math.random()*a.length)];
 const RFTH=[{n:'Gruta Glacial',g:G.CAVEICE,t:1,el:'ice'},{n:'Fornalha Planar',g:G.CAVE,t:2,el:'fire',lava:1},{n:'Pântano Fúngico',g:G.CAVEMOSS,t:4,el:'poison'},{n:'Tumba Sombria',g:G.CAVESAND,t:3,el:'shadow'},{n:'Salão Cristalino',g:G.CAVE,t:0,el:null}];
@@ -7112,6 +7117,72 @@ entSpriteRaw=function(e){
     g.restore()})),160,138]}
   finally{PZK=old}}
  return _esrGrif(e)};
+
+// ===== PET: ÁGUIA (comum) e ÁGUIA DE FOGO — desenho vetorial, 12 quadros de bater de asas =====
+const EGL=(function(){
+const TAU=Math.PI*2;
+function mix(h,f){const n=parseInt(h.slice(1),16),r=n>>16,g=n>>8&255,b=n&255;return'rgb('+(r*f|0)+','+(g*f|0)+','+(b*f|0)+')'}
+function feather(g,x,y,ang,len,wid,cA,cB,out,sh){g.save();g.translate(x,y);g.rotate(ang);const gr=g.createLinearGradient(0,0,len,0);gr.addColorStop(0,cA);gr.addColorStop(1,cB);g.fillStyle=gr;g.strokeStyle=out;g.lineWidth=1.4;g.lineJoin='round';g.beginPath();g.moveTo(0,-wid*.35);g.bezierCurveTo(len*.35,-wid*.65,len*.8,-wid*.55,len,-wid*.12);g.quadraticCurveTo(len*1.05,0,len,wid*.14);g.bezierCurveTo(len*.8,wid*.5,len*.35,wid*.6,0,wid*.35);g.closePath();g.fill();g.stroke();g.strokeStyle=sh;g.lineWidth=1;g.globalAlpha=.7;g.beginPath();g.moveTo(len*.08,0);g.lineTo(len*.92,0);g.stroke();g.restore()}
+function flame(g,x,y,ang,len,w,t,sd){g.save();g.translate(x,y);g.rotate(ang);const wb=Math.sin(t*14+sd*2.1)*w*.35;for(let k=0;k<2;k++){const L=len*(k?.55:1),W=w*(k?.5:1);const gr=g.createLinearGradient(0,0,L,0);gr.addColorStop(0,k?'#fff2a8':'#ff7a1c');gr.addColorStop(1,k?'rgba(255,220,90,0)':'rgba(255,60,0,0)');g.fillStyle=gr;g.beginPath();g.moveTo(0,-W/2);g.quadraticCurveTo(L*.5,-W*.8+wb*.4,L,wb);g.quadraticCurveTo(L*.5,W*.8+wb*.4,0,W/2);g.closePath();g.fill()}g.restore()}
+const PAL={
+ n:{pA:'#4a2f1b',pB:'#2a190d',sA:'#6b4528',sB:'#3a2412',cov:'#7d5334',covE:'#a67850',out:'#1d1209',sh:'#a67850',body:['#8a5e3a','#5a3a22','#3a2414'],head:['#fbf7ee','#d4cbbb'],beak:['#f6c23a','#b9831a'],tail:['#fbf7ee','#cfc5b4'],leg:'#f1b82e',claw:'#2b2118',eye:'#ffcf3a',brow:'#6a5f50'},
+ f:{pA:'#8c1d0a',pB:'#ffb52e',sA:'#6d150a',sB:'#ff8a22',cov:'#c23a10',covE:'#ff9a2e',out:'#2a0b05',sh:'#ffd45a',body:['#d9531a','#8c2410','#3a0f0a'],head:['#ffb044','#e0511c'],beak:['#ffd75a','#d9921c'],tail:['#ff9a2e','#9a2208'],leg:'#ffc23a',claw:'#3a0f0a',eye:'#fff1a0',brow:'#5a1608'}};
+function wing(g,Pl,fire,a,t,far){
+ const P=far?{...Pl,pA:mix(Pl.pA,.6),pB:mix(Pl.pB,.6),sA:mix(Pl.sA,.6),sB:mix(Pl.sB,.6),cov:mix(Pl.cov,.6),covE:mix(Pl.covE,.65),out:Pl.out}:Pl;
+ const sx=far?3:-4,sy=far?-14:-11;
+ const th=(-100-(1-a)/2*150+(far?-8:0))*Math.PI/180;
+ let d=Math.PI-th;d=((d+3*Math.PI)%TAU)-Math.PI;
+ const AL=38,wx=sx+Math.cos(th)*AL,wy=sy+Math.sin(th)*AL;
+ for(let k=0;k<6;k++){const s=.12+k/5*.88,bx=sx+Math.cos(th)*AL*s,by=sy+Math.sin(th)*AL*s;feather(g,bx,by,th+d*(.5+.22*(1-s))+Math.sin(t*9+k)*.03,38+10*s,15,P.sA,P.sB,P.out,P.sh)}
+ for(let k=0;k<7;k++){const ang=th+d*(.08+k*.085)+Math.sin(t*9+k*.6)*.04*k/3;const len=60-k*4;feather(g,wx,wy,ang,len,13,P.pA,P.pB,P.out,P.sh);if(fire&&!far){flame(g,wx+Math.cos(ang)*len,wy+Math.sin(ang)*len,ang,15+(k%3)*4,9,t,k)}}
+ for(let k=0;k<5;k++){const s=.1+k*.2,bx=sx+Math.cos(th)*AL*s,by=sy+Math.sin(th)*AL*s;g.save();g.translate(bx,by);g.rotate(th+d*.3);g.fillStyle=P.cov;g.strokeStyle=P.covE;g.lineWidth=1.3;g.beginPath();g.ellipse(7,0,12,7.5,0,0,TAU);g.fill();g.stroke();g.restore()}
+}
+function leg(g,P,x,y,far){g.save();g.translate(x,y);g.strokeStyle=far?mix(P.leg,.6):P.leg;g.lineCap='round';g.lineWidth=5;g.beginPath();g.moveTo(0,0);g.lineTo(-3,9);g.lineTo(5,17);g.stroke();g.lineWidth=3.4;for(let i=0;i<3;i++){g.beginPath();g.moveTo(5,17);g.quadraticCurveTo(10+i*2,17+i*3,12+i*2,22+i*2.5);g.stroke();g.strokeStyle=P.claw;g.lineWidth=2;g.beginPath();g.moveTo(11+i*2,21+i*2.5);g.lineTo(12.5+i*2,24+i*2.6);g.stroke();g.strokeStyle=far?mix(P.leg,.6):P.leg;g.lineWidth=3.4}g.restore()}
+function eagle(g,fire,t,sc){
+ const P=PAL[fire?'f':'n'];const a=Math.sin(t*TAU*1.8),bob=-Math.sin(t*TAU*1.8+.7)*4;
+ g.save();g.translate(0,bob);g.scale(sc,sc);g.lineJoin='round';g.lineCap='round';
+ if(fire){g.shadowColor='rgba(255,120,30,.75)';g.shadowBlur=22}
+ wing(g,P,fire,a*.92,t+.1,true);
+ // cauda
+ for(let k=0;k<6;k++){const ang=Math.PI+(k-2.5)*.11+Math.sin(t*5+k)*.04;if(fire){flame(g,-34,5,ang,40+(k%2)*6,12,t,k+3)}else feather(g,-34,5,ang,40,11,P.tail[0],P.tail[1],'#6a5f50','#b3a894')}
+ leg(g,P,-2,12,true);
+ // corpo
+ let gr=g.createLinearGradient(0,-20,0,18);gr.addColorStop(0,P.body[0]);gr.addColorStop(.6,P.body[1]);gr.addColorStop(1,P.body[2]);g.fillStyle=gr;g.strokeStyle=P.out;g.lineWidth=2;
+ g.beginPath();g.moveTo(-38,4);g.bezierCurveTo(-30,-15,14,-22,32,-10);g.bezierCurveTo(42,-2,32,17,6,17);g.bezierCurveTo(-14,17,-30,13,-38,4);g.closePath();g.fill();g.stroke();
+ g.shadowBlur=0;g.strokeStyle=fire?'rgba(255,200,90,.55)':'rgba(255,230,190,.28)';g.lineWidth=1.3;
+ for(let r=0;r<3;r++)for(let c=0;c<6;c++){const x=-24+c*9+(r%2)*4,y=-3+r*6;g.beginPath();g.arc(x,y,4.2,.2,Math.PI-.2);g.stroke()}
+ leg(g,P,6,12,false);
+ if(fire){g.shadowColor='rgba(255,120,30,.75)';g.shadowBlur=22}
+ // pescoço + cabeça
+ gr=g.createLinearGradient(0,-36,0,-6);gr.addColorStop(0,P.head[0]);gr.addColorStop(1,P.head[1]);g.fillStyle=gr;g.strokeStyle=fire?P.out:'#6a5f50';g.lineWidth=1.8;
+ g.beginPath();g.moveTo(22,-8);g.bezierCurveTo(24,-24,28,-33,40,-32);g.bezierCurveTo(50,-31,52,-20,47,-12);g.bezierCurveTo(42,-9,36,-4,28,0);g.closePath();g.fill();g.stroke();
+ g.shadowBlur=0;
+ if(fire){flame(g,36,-33,-1.9,22,10,t,11);flame(g,40,-33,-1.45,28,12,t,12);flame(g,44,-31,-1.1,20,9,t,13)}
+ // bico
+ g.fillStyle=P.beak[0];g.strokeStyle=P.out;g.lineWidth=1.5;g.beginPath();g.moveTo(46,-26);g.bezierCurveTo(58,-27,64,-19,60,-9);g.bezierCurveTo(58,-13,54,-14,47,-15);g.closePath();g.fill();g.stroke();
+ g.strokeStyle=P.beak[1];g.beginPath();g.moveTo(47,-17);g.quadraticCurveTo(54,-17,58,-14);g.stroke();
+ g.fillStyle=P.out;g.beginPath();g.arc(51,-22,1.3,0,TAU);g.fill();
+ // olho bravo
+ g.fillStyle=P.eye;g.beginPath();g.arc(43,-24,3.8,0,TAU);g.fill();g.fillStyle='#111';g.beginPath();g.arc(44,-24,1.9,0,TAU);g.fill();g.fillStyle='#fff';g.beginPath();g.arc(44.6,-24.8,.8,0,TAU);g.fill();
+ g.strokeStyle=P.brow;g.lineWidth=3.2;g.beginPath();g.moveTo(36,-30);g.lineTo(48,-25.5);g.stroke();
+ wing(g,P,fire,a,t,false);
+ if(fire)for(let i=0;i<12;i++){const ph=(t*.7+i*.173)%1,x=-34+i*7+Math.sin(i*7+t*3)*6,y=14-ph*70;g.fillStyle='rgba(255,'+(150+i*6)+',40,'+(1-ph)+')';g.beginPath();g.arc(x,y,2.4*(1-ph)+.4,0,TAU);g.fill()}
+ g.restore()}
+
+return{draw:eagle}})();
+['Águia','Águia de Fogo'].forEach((n,i)=>{
+ const d={id:'eagle'+i,name:n,kind:'beast',size:1,eagle:i,look:{},lvl:1,hp:1,maxhp:1,exp:0,gold:0,loot:[],spd:.2};
+ Object.defineProperty(MON,'eagle'+i,{value:d,enumerable:false,configurable:true,writable:true})});
+const _esrEgl=entSpriteRaw;
+entSpriteRaw=function(e){
+ if(e.type==='mon'&&e.def&&e.def.eagle!=null){
+  const f=e.def.eagle===1,fq=Math.floor((typeof gameTime==='number'?gameTime:0)*1.8*12)%12,old=PZK;
+  PZK=(old||'|x')+'|ea'+fq;
+  try{return[spr('eg_'+e.def.id,()=>mk(160,160,g=>{g.save();g.translate(82,100);
+    try{EGL.draw(g,f,fq/12/1.8,.9)}catch(err){if(!window._eglErr){window._eglErr=1;console.error(err)}}
+    g.restore()})),160,138]}
+  finally{PZK=old}}
+ return _esrEgl(e)};
 
 // ===== INTERFACE =====
 const $=id=>document.getElementById(id);
