@@ -7388,7 +7388,7 @@ function drawMap(){const c=$('mapc'),S=c.width,VH=P.layer?H:MAPVH;if(c.height!==
  $('maptitle').textContent=P.layer===4?'Mapa da fenda planar':P.layer>=2?'Mapa da masmorra':P.layer?'Mapa das cavernas':'Mapa-múndi de Aldora'}
 // ---------- painel lateral ----------
 function togglePanel(t){panelTab=(t&&panelTab===t)?null:t;$('panel').hidden=!panelTab;document.querySelectorAll('#menu button[data-p],#more button[data-p]').forEach(b=>b.classList.toggle('on',b.dataset.p===panelTab));if(panelTab)renderPanel()}
-function refreshUI(){if(!P)return;if(panelTab)renderPanel();refreshBar();if(curNpc&&!$('dlg').hidden)dlgRefresh&&dlgRefresh()}
+function refreshUI(){if(!P)return;if(panelTab)renderPanel();refreshBar();if(curNpc&&!$('dlg').hidden){_dlgKeepT=performance.now();dlgRefresh&&dlgRefresh()}}
 function itemStats(it){if(it.type==='equip'){const v=it.voc?' · '+VOCS[it.voc].name:'';return(it.atk?'Ataque '+it.atk:'Defesa '+it.def)+' · Nv '+it.lvl+v+(it.rar?' · '+RAR[it.rar].n:'')}if(it.type==='potion')return 'Restaura '+it.val+(it.kind==='hp'?' de vida':' de mana');return 'Valor '+fmt(it.price)+' · material'}
 function itemRow(it,right){const r=el('div','row');const im=el('img');im.src=iconURL(it);im.alt='';r.appendChild(im);const m=el('div','mid');m.innerHTML='<b></b><small></small>';m.firstChild.textContent=itemName(it);if(it.rar)m.firstChild.style.color=RAR[it.rar].c;m.lastChild.textContent=itemStats(it);r.appendChild(m);if(right)r.appendChild(right);return r}
 function renderPanel(){const p=$('pbody');p.innerHTML='';$('ptitle').textContent={inv:'Mochila e equipamento',quests:'Diário de missões',spells:'Magias',char:'Personagem',ach:'Conquistas e títulos',bst:'Bestiário',lore:'Diário de Aldora',opt:'Opções'}[panelTab];
@@ -7444,7 +7444,12 @@ function openNpc(n){curNpc=n;dlgPos={x:P.x,y:P.y};const d=$('dlg');d.hidden=fals
  $('dname').textContent=n.name;$('dtitle').textContent=n.title+(n.city!==undefined?' · '+world.cities[n.city].name:'');
  dlgMain()}
 const GREET={boat:'Meu barco cruza o grande oceano. Há terras selvagens além do horizonte, mas só os fortes voltam de lá.',bank:'Bem-vindo ao Banco de Aldora! Seu ouro e seus itens ficam seguros aqui, em qualquer cidade.',temple:'Que a luz o proteja, viajante. Precisa de cura?',weapon:'Armas forjadas com cuidado! O que procura?',armor:'Armaduras para todos os tamanhos de coragem.',alchemy:'Poções frescas! Vida, mana, o que precisar.',general:'Compro tudo o que você trouxer das criaturas. Preços justos!',travel:'Para onde vamos? Só levo a cidades que você já conhece.',guild:'A Guilda sempre precisa de heróis.',plaza1:'Tenho trabalho para quem não tem medo.',plaza2:'Viajante! Pode me ajudar?',realtor:'Procurando um lar em Aldora? Tenho casas com baú, cama e muito espaço!',guard:'A cidade é segura. Os monstros não passam dos portões.'};
-function dlgBody(){const b=$('dbody');b.innerHTML='';return b}
+let _dlgKeepT=-1e9;
+function dlgBody(){const b=$('dbody'),keep=performance.now()-_dlgKeepT<80&&!$('dlg').hidden;let sv=null;
+ if(keep){const l=b.querySelector('.list'),d=$('dlg');sv={b:b.scrollTop,l:l?l.scrollTop:0,d:d.scrollTop}}
+ b.innerHTML='';
+ if(sv)Promise.resolve().then(()=>{const l=b.querySelector('.list'),d=$('dlg');b.scrollTop=sv.b;if(l)l.scrollTop=sv.l;d.scrollTop=sv.d});
+ return b}
 function opt(b,t,fn,cls){const x=el('button','opt '+(cls||''),t);x.onclick=fn;b.appendChild(x);return x}
 function dlgMain(){dlgRefresh=dlgMain;const n=curNpc,b=dlgBody();let txt=GREET[n.role]||pick(RUMORS);
  if(n.role==='citizen')txt=RUMORS[(n.id*7)%RUMORS.length];
